@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<block>
+  <name>Single-Page POCSAG Xmit</name>
+  <key>mixalot_pocencode</key>
+  <category>mixalot</category>
+  <import>import mixalot</import>
+  <make>mixalot.pocencode($type, $baudrate, $capcode, $msg, $symrate)</make>
+    <param>
+        <name>Message Type</name>
+        <key>type</key>
+        <type>enum</type>
+        <option>
+            <name>Numeric</name>
+            <key>0</key>
+        </option>
+        <option>
+            <name>Alphanumeric</name>
+            <key>1</key>
+        </option>
+    </param>
+    <param>
+        <name>Baud Rate</name>
+        <key>baudrate</key>
+        <type>int</type>
+    </param>
+    <param>
+        <name>Capcode</name>
+        <key>capcode</key>
+        <type>int</type>
+    </param>
+    <param>
+        <name>Message</name>
+        <key>msg</key>
+        <type>string</type>
+    </param>
+    <param>
+        <name>Symbol Rate</name>
+        <key>symrate</key>
+        <type>real</type>
+    </param>
+
+    <source>
+        <name>out</name>
+        <type>byte</type>
+        <vlen>1</vlen>
+    </source>
+</block>
