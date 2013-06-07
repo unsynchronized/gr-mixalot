@@ -1,4 +1,5 @@
 gr-mixalot
 ==========
 
-POCSAG encoder blocks for GNU radio
+gr-mixalot is intended to be a set of GNU Radio blocks/utilities to encode pager messages.  Currently it only supports POCSAG. 
+
