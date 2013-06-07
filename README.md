@@ -116,13 +116,13 @@ documents.
 
 Thanks to the following for testing and general awesomeness, in alphabetical 
 order: 
-    * arko
-    * banasidhe
-    * docwho
-    * dragorn
-    * jeffE
-    * the Ninjatel crew; barkode, cnelson, eliot, falconred, far_call, kubla
-    * Mike Ossmann
-    * pinguino
-    * vyrus
+* arko
+* banasidhe
+* docwho
+* dragorn
+* jeffE
+* the Ninjatel crew; barkode, cnelson, eliot, falconred, far_call, kubla
+* Mike Ossmann
+* pinguino
+* vyrus
 
