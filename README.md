@@ -41,6 +41,7 @@ Usage
 =====
 
 To send a page to a device, you'll need to know:
+
 * the frequency it's tuned to (often printed on the device)
 * its cap code (often printed on the device)
 * its baud rate (POCSAG is specified for 512, 1200, and 2400 baud)
