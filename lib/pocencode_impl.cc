@@ -184,7 +184,6 @@ namespace gr {
                 }
                 d_bitqueue.pop();
             }
-            std::cout << "returning " << toxfer << " bvec bytes" << std::endl;
             return toxfer;
 
         }
