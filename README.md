@@ -7,16 +7,17 @@ pages.  It's also intended to be a fairly clear, short example of basic
 transmission with GNU Radio.   
 
 The POCSAG encoder has been tested against many variants of the Motorola Bravo 
-series, as well as the ATI Wireless CCP-6000.  Please get in touch if you
-find a device that doesn't work properly.  
+and Advisor series, as well as the ATI Wireless CCP-6000.  Please get in touch 
+if you find a device that doesn't work properly.  
 
 
 Building
 ========
 
 Like many other out-of-tree modules, gr-mixalot uses cmake.  The only 
-dependencies should be a recent version of GNU Radio (3.6.x) and the ITPP
-library.
+dependencies should be a recent version of GNU Radio (3.6.x or 3.7.0 git should 
+work) and the ITPP library.  To use the HackRF sink, you'll also need gr-osmosdr 
+installed.
 
 To build, create a new directory and run:
 
@@ -48,6 +49,8 @@ To send a page to a device, you'll need to know:
 * whether it wants alphanumeric or numeric pages
 
 After installing, start gnuradio-companion and open the pocsagtx.grc flowgraph.
+(HackRF users: try pocsagtx_hackrf.grc.)
+
 Double-click the "Single-Page POCSAG Xmit" block to modify the baud rate, 
 capcode, and message.  After saving, double-click the "pagerfreq" Variable block
 to change the tunning frequency.  (This should be specified in Hz).  Change the
@@ -100,7 +103,6 @@ points of the spec, including:
 Current todo list/Coming soon
 =============================
 
-* Working example flowgraph with a HackRF as the target.
 * Eliminate dependency on the ITPP library (currently only used for BCH) 
 * Golay/GSC encoding 
 * Flex support
