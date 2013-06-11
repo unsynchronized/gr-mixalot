@@ -2,7 +2,6 @@
 #include "config.h"
 #endif
 
-#include <gr_io_signature.h>
 #include <itpp/comm/bch.h>
 #include <iostream>
 #include <sstream>
@@ -79,7 +78,7 @@ namespace gr {
             gr_uint32 u = 0;
             for(unsigned int i = 0; i < (bv.length() > 32 ? 32 : bv.length()); i++) {
                 u <<= 1;
-                u |= bv(i);
+                u = u | (bv(i) ? 1 : 0);
             }
             return u;
         }
