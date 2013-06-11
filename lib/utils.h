@@ -2,8 +2,13 @@
 #include "config.h"
 #endif
 
+#ifdef GR_OLD
 #include <gr_types.h>
 #include <gr_io_signature.h>
+#else
+#include <gnuradio/types.h>
+#include <gnuradio/io_signature.h>
+#endif
 #include <itpp/comm/bch.h>
 #include <iostream>
 #include <sstream>

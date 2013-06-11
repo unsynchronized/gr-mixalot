@@ -83,17 +83,28 @@ set(GRC_BLOCKS_DIR      ${GR_PKG_DATA_DIR}/grc/blocks)
 ########################################################################
 # Find gnuradio build dependencies
 ########################################################################
+set(GR_REQUIRED_COMPONENTS RUNTIME BLOCKS FILTER PMT)
+find_package(Gnuradio "3.7.0")
 find_package(Gruel)
 find_package(GnuradioCore)
 find_package(CppUnit)
 find_package(ITPP)
 
-if(NOT GRUEL_FOUND)
-    message(FATAL_ERROR "Gruel required to compile mixalot")
-endif()
-
-if(NOT GNURADIO_CORE_FOUND)
-    message(FATAL_ERROR "GnuRadio Core required to compile mixalot")
+if(GNURADIO_CORE_FOUND)
+    if(NOT GRUEL_FOUND)
+        message(FATAL_ERROR "Gruel required to compile mixalot against GNU Radio 3.6.x.")
+    endif()
+    set(GR_LIBS ${GNURADIO_CORE_LIBRARIES} ${GRUEL_LIBRARIES} ${GNURADIO_PMT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES})
+    set(GR_LIBDIRS ${GNURADIO_CORE_LIBRARY_DIRS})
+    set(GR_INCLUDES ${GNURADIO_CORE_INCLUDE_DIRS} ${GRUEL_INCLUDE_DIRS} "${GRUEL_INCLUDE_DIRS}/gruel")
+    add_definitions(-DGR_OLD)
+    list(APPEND GR_SWIG_FLAGS "-DGR_OLD")
+elseif(GNURADIO_RUNTIME_FOUND)
+    set(GR_LIBS ${GNURADIO_RUNTIME_LIBRARIES} ${GNURADIO_PMT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES})
+    set(GR_LIBDIRS ${GNURADIO_RUNTIME_LIBRARY_DIRS} ${GNURADIO_PMT_LIBRARY_DIRS} ${GNURADIO_FILTER_LIBRARY_DIRS})
+    set(GR_INCLUDES ${GNURADIO_RUNTIME_INCLUDE_DIRS})
+else()
+    message(FATAL_ERROR "Need either gnuradio-core+gruel (3.6.x) or gnuradio-runtime (3.7.x).")
 endif()
 
 if(NOT CPPUNIT_FOUND)
@@ -108,14 +119,14 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
     ${GRUEL_INCLUDE_DIRS}
     ${CPPUNIT_INCLUDE_DIRS}
-    ${GNURADIO_CORE_INCLUDE_DIRS}
+    ${GR_INCLUDES}
 )
 
 link_directories(
     ${Boost_LIBRARY_DIRS}
     ${GRUEL_LIBRARY_DIRS}
     ${CPPUNIT_LIBRARY_DIRS}
-    ${GNURADIO_CORE_LIBRARY_DIRS}
+    ${GR_LIBDIRS}
 )
 
 # Set component parameters

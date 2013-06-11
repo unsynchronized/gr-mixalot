@@ -31,8 +31,9 @@ include(GrPython)
 ########################################################################
 # Setup swig generation
 ########################################################################
-foreach(incdir ${GNURADIO_CORE_INCLUDE_DIRS})
+foreach(incdir ${GR_INCLUDES})
     list(APPEND GR_SWIG_INCLUDE_DIRS ${incdir}/swig)
+    list(APPEND GR_SWIG_INCLUDE_DIRS ${incdir}/gnuradio/swig)
 endforeach(incdir)
 
 foreach(incdir ${GRUEL_INCLUDE_DIRS})

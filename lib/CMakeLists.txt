@@ -23,17 +23,18 @@
 include(GrPlatform) #define LIB_SUFFIX
 
 include_directories(
+    ${GR_INCLUDES}
     ${Boost_INCLUDE_DIR}
     ${ITPP_INCLUDE_DIR}
 )
-link_directories(${Boost_LIBRARY_DIRS})
+link_directories(${Boost_LIBRARY_DIRS} ${GR_LIBDIRS})
 list(APPEND mixalot_sources
     utils.cc
     pocencode_impl.cc
     )
 
 add_library(gnuradio-mixalot SHARED ${mixalot_sources})
-target_link_libraries(gnuradio-mixalot ${Boost_LIBRARIES} ${GRUEL_LIBRARIES} ${GNURADIO_CORE_LIBRARIES} ${ITPP_LIBRARY_NORMAL})
+target_link_libraries(gnuradio-mixalot ${Boost_LIBRARIES} ${GR_LIBS}  ${ITPP_LIBRARY_NORMAL})
 set_target_properties(gnuradio-mixalot PROPERTIES DEFINE_SYMBOL "gnuradio_mixalot_EXPORTS")
 
 ########################################################################
@@ -61,7 +62,7 @@ add_executable(test-mixalot ${test_mixalot_sources})
 
 target_link_libraries(
   test-mixalot
-  ${GNURADIO_CORE_LIBRARIES}
+  ${GR_LIBS}
   ${Boost_LIBRARIES}
   ${CPPUNIT_LIBRARIES}
   ${ITPP_LIBRARY_NORMAL}

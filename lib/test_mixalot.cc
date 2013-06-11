@@ -23,7 +23,11 @@
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/XmlOutputter.h>
 
+#ifdef GR_OLD
 #include <gr_unittests.h>
+#else
+#include <gnuradio/unittests.h>
+#endif
 #include "qa_mixalot.h"
 #include <iostream>
 
