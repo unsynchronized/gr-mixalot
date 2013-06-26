@@ -22,7 +22,11 @@
 #ifndef INCLUDED_MIXALOT_API_H
 #define INCLUDED_MIXALOT_API_H
 
+#ifdef GR_OLD
 #include <gruel/attributes.h>
+#else
+#include <gnuradio/attributes.h>
+#endif
 
 #ifdef gnuradio_mixalot_EXPORTS
 #  define MIXALOT_API __GR_ATTR_EXPORT

@@ -23,7 +23,11 @@
 #ifndef _QA_MIXALOT_H_
 #define _QA_MIXALOT_H_
 
+#ifdef GR_OLD
 #include <gruel/attributes.h>
+#else
+#include <gnuradio/attributes.h>
+#endif
 #include <cppunit/TestSuite.h>
 
 //! collect all the tests for the gr-filter directory

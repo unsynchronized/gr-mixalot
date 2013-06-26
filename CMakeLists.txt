@@ -95,7 +95,7 @@ if(GNURADIO_CORE_FOUND)
         message(FATAL_ERROR "Gruel required to compile mixalot against GNU Radio 3.6.x.")
     endif()
     set(GR_LIBS ${GNURADIO_CORE_LIBRARIES} ${GRUEL_LIBRARIES} ${GNURADIO_PMT_LIBRARIES} ${GNURADIO_FILTER_LIBRARIES})
-    set(GR_LIBDIRS ${GNURADIO_CORE_LIBRARY_DIRS})
+    set(GR_LIBDIRS ${GNURADIO_CORE_LIBRARY_DIRS} ${GRUEL_LIBRARY_DIRS})
     set(GR_INCLUDES ${GNURADIO_CORE_INCLUDE_DIRS} ${GRUEL_INCLUDE_DIRS} "${GRUEL_INCLUDE_DIRS}/gruel")
     add_definitions(-DGR_OLD)
     list(APPEND GR_SWIG_FLAGS "-DGR_OLD")
@@ -117,14 +117,13 @@ endif()
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${Boost_INCLUDE_DIRS}
-    ${GRUEL_INCLUDE_DIRS}
+    ${GR_INCLUDES}
     ${CPPUNIT_INCLUDE_DIRS}
     ${GR_INCLUDES}
 )
 
 link_directories(
     ${Boost_LIBRARY_DIRS}
-    ${GRUEL_LIBRARY_DIRS}
     ${CPPUNIT_LIBRARY_DIRS}
     ${GR_LIBDIRS}
 )
