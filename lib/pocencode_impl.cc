@@ -8,11 +8,7 @@
 #include "config.h"
 #endif
 
-#ifdef GR_OLD
-#include <gr_io_signature.h>
-#else
 #include <gnuradio/io_signature.h>
-#endif
 #include "pocencode_impl.h"
 #include <iostream>
 #include <sstream>
@@ -118,15 +114,9 @@ namespace gr {
 
         pocencode_impl::pocencode_impl(msgtype_t msgtype, unsigned int baudrate, unsigned int capcode, std::string message, unsigned long symrate)
           : d_baudrate(baudrate), d_capcode(capcode), d_msgtype(msgtype), d_message(message), d_symrate(symrate), 
-#ifdef GR_OLD
-          gr_sync_block("pocencode",
-                  gr_make_io_signature(0, 0, 0),
-                  gr_make_io_signature(1, 1, sizeof (unsigned char)))
-#else 
           sync_block("pocencode",
                   io_signature::make(0, 0, 0),
                   io_signature::make(1, 1, sizeof (unsigned char)))
-#endif
         {
             if(d_symrate % d_baudrate != 0) {
                 std::cerr << "Output symbol rate must be evenly divisible by baud rate!" << std::endl;
