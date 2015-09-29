@@ -34,7 +34,7 @@ list(APPEND mixalot_sources
     )
 
 add_library(gnuradio-mixalot SHARED ${mixalot_sources})
-target_link_libraries(gnuradio-mixalot ${Boost_LIBRARIES} ${GR_LIBS}  ${ITPP_LIBRARY_NORMAL})
+target_link_libraries(gnuradio-mixalot ${Boost_LIBRARIES} ${GR_LIBS}  ${ITPP_LIBRARY})
 set_target_properties(gnuradio-mixalot PROPERTIES DEFINE_SYMBOL "gnuradio_mixalot_EXPORTS")
 
 ########################################################################
@@ -65,7 +65,7 @@ target_link_libraries(
   ${GR_LIBS}
   ${Boost_LIBRARIES}
   ${CPPUNIT_LIBRARIES}
-  ${ITPP_LIBRARY_NORMAL}
+  ${ITPP_LIBRARY}
   gnuradio-mixalot
 )
 

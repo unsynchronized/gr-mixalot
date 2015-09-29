@@ -8,21 +8,13 @@
 #define INCLUDED_MIXALOT_POCENCODE_H
 
 #include <mixalot/api.h>
-#ifdef GR_OLD
-#include <gr_sync_block.h>
-#else
 #include <gnuradio/sync_block.h>
-#endif
 
 namespace gr {
   namespace mixalot {
 
 
-#ifdef GR_OLD
-    class MIXALOT_API pocencode : virtual public gr_sync_block
-#else 
     class MIXALOT_API pocencode : virtual public sync_block
-#endif
     {
     public:
        typedef boost::shared_ptr<pocencode> sptr;
