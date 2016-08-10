@@ -36,7 +36,7 @@ Examples:
 
     % export LD_LIBRARY_PATH /usr/local/lib
     or
-    % echo /usr/local/lib | sudo tee /etc/ld.so.conf
+    % echo /usr/local/lib | sudo tee -a /etc/ld.so.conf
 
 WARNING
 =======
