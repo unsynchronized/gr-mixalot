@@ -27,6 +27,16 @@ To build, create a new directory and run:
 To install (may require root), run from the same directory:
     % make install
 
+On UNIX systems, ensure that the install destination lib folder is added to
+your LD\_LIBRARY\_PATH, or add it to your /etc/ld.so.conf. A default install
+will place library files in /usr/local/lib, which is not searched by default
+on many Linux distributions.
+
+Examples:
+
+    % export LD_LIBRARY_PATH /usr/local/lib
+    or
+    % echo /usr/local/lib | sudo tee /etc/ld.so.conf
 
 WARNING
 =======
