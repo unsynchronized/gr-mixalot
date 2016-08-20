@@ -21,7 +21,7 @@
 # Include swig generation macros
 ########################################################################
 find_package(SWIG)
-find_package(PythonLibs)
+find_package(PythonLibs 2.5)
 if(NOT SWIG_FOUND OR NOT PYTHONLIBS_FOUND)
     return()
 endif()
@@ -50,6 +50,22 @@ GR_SWIG_MAKE(mixalot_swig mixalot_swig.i)
 # Install the build swig module
 ########################################################################
 GR_SWIG_INSTALL(TARGETS mixalot_swig DESTINATION ${GR_PYTHON_DIR}/mixalot)
+
+if(UNIX)
+    SET( swig_lib _mixalot_swig.lnk )
+    SET( swig_lib_target ${CMAKE_INSTALL_PREFIX}/${GR_PYTHON_DIR}/mixalot/_mixalot_swig.so )
+    ADD_CUSTOM_COMMAND( OUTPUT ${swig_lib}
+                        COMMAND ln -sf ${swig_lib_target} ${swig_lib}
+                        COMMENT "Generating system symlink for mixalot"
+    )
+    ADD_CUSTOM_TARGET( mixalot_swig_link
+                       ALL
+                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${swig_lib} )
+    install( FILES ${CMAKE_CURRENT_BINARY_DIR}/${swig_lib}
+             DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/
+             RENAME _mixalot_swig.so )
+endif(UNIX)
+
 
 ########################################################################
 # Install swig .i files for development
