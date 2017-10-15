@@ -14,7 +14,7 @@ using std::string;
 namespace gr {
     namespace mixalot {
         unsigned char
-        even_parity(gr_uint32 x) {
+        even_parity(uint32_t x) {
             x ^= x >> 16;
             x ^= x >> 8;
             x ^= x >> 4;
@@ -49,20 +49,20 @@ namespace gr {
         // BCH(31,21) codeword.  This is systematic encoding -- the data is left as a contiguous stream
         // of bits, shifted to the upper 21 bits of the result; these are followed by the 11-bit BCH ECC,
         // and finally the parity bit is the LSB.
-        gr_uint32 
-        encodeword(gr_uint32 dw) {
+        uint32_t 
+        encodeword(uint32_t dw) {
             static BCH bch(31,21,2,ivec("3 5 5 1"), true);
             bvec b(21);
-            gr_uint32o_bvec(dw, b, 21);
+            uint32_to_bvec(dw, b, 21);
             assert((dw >> 11) == bvec_to_uint32(b));
             b = bch.encode(b);
             b.set_size(32, true);
-            gr_uint32 codeword = (bvec_to_uint32(b));
+            uint32_t codeword = (bvec_to_uint32(b));
             codeword |= (even_parity(codeword) & 1);
             return codeword;
         }
         void 
-        gr_uint32o_bvec(gr_uint32 d, bvec &bv, int nbits) {
+        uint32_to_bvec(uint32_t d, bvec &bv, int nbits) {
             assert(nbits >= 0 && nbits < 33);
             bv.zeros();
             for(int i = 0; i < nbits; i++) {
@@ -73,9 +73,9 @@ namespace gr {
 
 
 
-        gr_uint32 
+        uint32_t 
         bvec_to_uint32(const bvec &bv) {
-            gr_uint32 u = 0;
+            uint32_t u = 0;
             for(unsigned int i = 0; i < (bv.length() > 32 ? 32 : bv.length()); i++) {
                 u <<= 1;
                 u = u | (bv(i) ? 1 : 0);
@@ -87,12 +87,12 @@ namespace gr {
 
         #define MSG_BASE 0x33333333
         void 
-        make_numeric_message(const std::string message, std::vector<gr_uint32> &msgwords) {
+        make_numeric_message(const std::string message, std::vector<uint32_t> &msgwords) {
             int curpos = 0;
-            gr_uint32 msg = MSG_BASE;
+            uint32_t msg = MSG_BASE;
             for(int i = 0; i < message.length(); i++) {
                 char d = message[i];
-                gr_uint32 mbit = 0;
+                uint32_t mbit = 0;
                 switch(d) {
                     case ']':
                     case ')':
@@ -153,8 +153,8 @@ namespace gr {
                 msg |= mbit;
                 curpos++;
                 if(curpos == 5) {
-                    const gr_uint32 msgtemp = (msg << 11) | 0x80000000;
-                    const gr_uint32 msgword = encodeword(msgtemp);
+                    const uint32_t msgtemp = (msg << 11) | 0x80000000;
+                    const uint32_t msgword = encodeword(msgtemp);
                     assert((msgword & 0xFFFFF800) == msgtemp);      // sanity
                     msgwords.push_back(msgword);
                     curpos = 0;
@@ -166,14 +166,14 @@ namespace gr {
                     msg <<= 4;
                     msg |= 0x3;
                 }
-                const gr_uint32 msgtemp = (msg << 11) | 0x80000000;
-                const gr_uint32 msgword = encodeword(msgtemp);
+                const uint32_t msgtemp = (msg << 11) | 0x80000000;
+                const uint32_t msgword = encodeword(msgtemp);
                 assert((msgword & 0xFFFFF800) == msgtemp);      // sanity
                 msgwords.push_back(msgword);
             }
         }
         void 
-        make_alpha_message(const std::string message, std::vector<gr_uint32> &msgwords) {
+        make_alpha_message(const std::string message, std::vector<uint32_t> &msgwords) {
             std::vector<bool> bitvec;
             for(int i = 0; i < message.length(); i++) {
                 unsigned char c = (unsigned char)message[i];
@@ -184,14 +184,14 @@ namespace gr {
             }
             bitvec.push_back(3);     // EOT -- not required, but helps
             unsigned int bc = 0;
-            gr_uint32 msg = 0;
+            uint32_t msg = 0;
             for(std::vector<bool>::iterator bit = bitvec.begin(); bit != bitvec.end(); bit++) {
                 msg <<= 1;
                 msg |= *bit;
                 bc++;
                 if(bc == 20) {
-                    const gr_uint32 msgtemp = (msg << 11) | 0x80000000;
-                    const gr_uint32 msgword = encodeword(msgtemp);
+                    const uint32_t msgtemp = (msg << 11) | 0x80000000;
+                    const uint32_t msgword = encodeword(msgtemp);
                     assert((msgword & 0xFFFFF800) == msgtemp);      // sanity
                     msgwords.push_back(msgword);
                     bc = 0;
@@ -200,8 +200,8 @@ namespace gr {
             }
             if(bc > 0) {
                 msg <<= (20-bc);
-                const gr_uint32 msgtemp = (msg << 11) | 0x80000000;
-                const gr_uint32 msgword = encodeword(msgtemp);
+                const uint32_t msgtemp = (msg << 11) | 0x80000000;
+                const uint32_t msgword = encodeword(msgtemp);
                 assert((msgword & 0xFFFFF800) == msgtemp);      // sanity
                 msgwords.push_back(msgword);
             }
