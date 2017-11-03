@@ -42,8 +42,8 @@ namespace gr {
 #define POCSAG_IDLEWORD 0x7A89C197
         void 
         pocencode_impl::queue_batch() {
-            std::vector<gr_uint32> msgwords;
-            gr_uint32 functionbits = 0;
+            std::vector<uint32_t> msgwords;
+            uint32_t functionbits = 0;
             switch(d_msgtype) {
                 case Numeric:
                     make_numeric_message(d_message, msgwords);
@@ -59,9 +59,9 @@ namespace gr {
             msgwords.push_back(POCSAG_IDLEWORD);
 
             static const shared_ptr<bvec> preamble = get_vec("101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010");
-            const gr_uint32 addrtemp = (d_capcode >> 3) << 13 | ((functionbits & 3) << 11);
-            const gr_uint32 addrword = encodeword(addrtemp);
-            const gr_uint32 frameoffset = d_capcode & 7;
+            const uint32_t addrtemp = (d_capcode >> 3) << 13 | ((functionbits & 3) << 11);
+            const uint32_t addrword = encodeword(addrtemp);
+            const uint32_t frameoffset = d_capcode & 7;
 
             assert((addrword & 0xFFFFF800) == addrtemp);
 
@@ -73,7 +73,7 @@ namespace gr {
                 queue(POCSAG_IDLEWORD);
             }
             queue(addrword);
-            std::vector<gr_uint32>::iterator it = msgwords.begin();
+            std::vector<uint32_t>::iterator it = msgwords.begin();
 
             for(int i = (frameoffset * 2)+1; i < 16; i++) {
                 if(it != msgwords.end()) {
@@ -103,7 +103,7 @@ namespace gr {
             }
         }
         void 
-        pocencode_impl::queue(gr_uint32 val) {
+        pocencode_impl::queue(uint32_t val) {
             for(int i = 0; i < 32; i++) {
                 queuebit(((val & 0x80000000) == 0x80000000) ? 1 : 0);
                 val = val << 1;
