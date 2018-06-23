@@ -467,7 +467,7 @@
     </param>
     <param>
       <key>capcode</key>
-      <value>425321</value>
+      <value>capcode</value>
     </param>
     <param>
       <key>msg</key>
@@ -531,6 +531,53 @@
     <param>
       <key>value</key>
       <value>GRAND CENTRAL\x0a\x0aHACKRF THE PLANET</value>
+    </param>
+  </block>
+  <block>
+    <key>parameter</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(200, 68)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>capcode</value>
+    </param>
+    <param>
+      <key>label</key>
+      <value></value>
+    </param>
+    <param>
+      <key>short_id</key>
+      <value></value>
+    </param>
+    <param>
+      <key>hide</key>
+      <value>none</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>intx</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>425321</value>
     </param>
   </block>
   <block>
