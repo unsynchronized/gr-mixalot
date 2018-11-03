@@ -5,6 +5,7 @@
 #include <gnuradio/types.h>
 #include <gnuradio/io_signature.h>
 #include <itpp/comm/bch.h>
+#include <stdint.h>
 #include <iostream>
 #include <sstream>
 #include <vector>
