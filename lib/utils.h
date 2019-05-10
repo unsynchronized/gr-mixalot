@@ -19,6 +19,7 @@ namespace gr {
         void make_alpha_message(const std::string message, std::vector<uint32_t> &msgwords);
         uint32_t encodeword(uint32_t dw);
         void uint32_to_bvec(uint32_t d, bvec &bv, int nbits = 32);
+        uint32_t reverse_bits32(uint32_t x);
         uint32_t bvec_to_uint32(const bvec &bv);
         unsigned char even_parity(uint32_t x);
     }
