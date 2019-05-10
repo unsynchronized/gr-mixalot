@@ -18,5 +18,6 @@
 # Boston, MA 02110-1301, USA.
 install(FILES
     mixalot_pocencode.xml
+    mixalot_flexencode.xml
     DESTINATION share/gnuradio/grc/blocks
 )

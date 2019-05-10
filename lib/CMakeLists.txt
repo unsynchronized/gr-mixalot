@@ -31,6 +31,7 @@ link_directories(${Boost_LIBRARY_DIRS} ${GR_LIBDIRS})
 list(APPEND mixalot_sources
     utils.cc
     pocencode_impl.cc
+    flexencode_impl.cc
     )
 
 add_library(gnuradio-mixalot SHARED ${mixalot_sources})

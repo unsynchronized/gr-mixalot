@@ -9,9 +9,12 @@
 
 %{
 #include "mixalot/pocencode.h"
+#include "mixalot/flexencode.h"
 %}
 
 
 %include "mixalot/pocencode.h"
+%include "mixalot/flexencode.h"
 GR_SWIG_BLOCK_MAGIC2(mixalot, pocencode);
+GR_SWIG_BLOCK_MAGIC2(mixalot, flexencode);
 

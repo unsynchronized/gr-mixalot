@@ -23,5 +23,6 @@
 install(FILES
     api.h
     pocencode.h
+    flexencode.h
     DESTINATION include/mixalot
 )
