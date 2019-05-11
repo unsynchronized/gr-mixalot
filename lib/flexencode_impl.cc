@@ -83,24 +83,70 @@ namespace gr {
             dw |= (repeat & 1) << 16;
             dw |= (t & 0xf) << 17;
             
-            std::cout << "XXX for dw: " << std::hex << dw << std::endl;
-            std::cout << "XXX: " << u32tostring(dw) << std::endl;
-            std::cout << "XXX rev dw: " << std::hex << reverse_bits32(dw) << std::endl;
-            std::cout << "XXX: " << u32tostring(reverse_bits32(dw)) << std::endl;
-
             add_flex_checksum(dw);
 
-            std::cout << "XXX for dw: " << std::hex << dw << std::endl;
-            std::cout << "XXX: " << u32tostring(dw) << std::endl;
-            std::cout << "XXX rev dw: " << std::hex << reverse_bits32(dw) << std::endl;
-            std::cout << "XXX: " << u32tostring(reverse_bits32(dw)) << std::endl;
-
             uint32_t encoded = encodeword(reverse_bits32(dw));
-            std::cout << "XXX for encoded: " << std::hex << encoded << std::endl;
-            std::cout << "XXX: " << u32tostring(encoded) << std::endl;
-            std::cout << "XXX rev encoded: " << std::hex << reverse_bits32(encoded) << std::endl;
-            std::cout << "XXX: " << u32tostring(reverse_bits32(encoded)) << std::endl;
 
+            return encoded;
+        }
+
+        /**
+         * Make an encoded BIW 1 with the given parameters.
+         *
+         * Returns a reversed 32-bit word (LSB of ret val is the parity bit).
+         *
+         * NOTE: The second parameter (blockinfo) is the actual value of a, not the number
+         * of words (which is a+1)
+         */
+        uint32_t
+        make_biw1(uint32_t priority, uint32_t blockinfo, uint32_t vectorstart, uint32_t carryon, uint32_t collapse) {
+            uint32_t dw = 0;
+            dw |= (priority & 0xf) << 4;
+            dw |= (blockinfo & 0x3) << 8;
+            dw |= (vectorstart & 0x3f) << 10;
+            dw |= (carryon & 0x3) << 16;
+            dw |= (collapse & 0x7) << 18;
+
+            add_flex_checksum(dw);
+            uint32_t encoded = encodeword(reverse_bits32(dw));
+            std::cout << "XXX BIW1 for encoded: " << std::hex << encoded << std::endl;
+            std::cout << "XXX: " << u32tostring(encoded) << std::endl;
+            std::cout << "XXX BIW1 rev encoded: " << std::hex << reverse_bits32(encoded) << std::endl;
+            std::cout << "XXX: " << u32tostring(reverse_bits32(encoded)) << std::endl;
+            return encoded;
+        }
+
+        /**
+         * Make a short-address word.
+         *
+         * Returns a reversed 32-bit word (LSB of ret val is the parity bit).
+         */
+        uint32_t
+        make_short_address(uint32_t address) {
+            assert(address >= 32769 && address <= 1966080);
+            uint32_t dw = 0;
+            dw |= (address & 0x1FFFFF);
+            uint32_t encoded = encodeword(reverse_bits32(dw));
+            return encoded;
+        }
+
+        /**
+         * Make a numeric vector word.
+         *
+         * NOTE: nwords is not the total number of words in the message; it's the value
+         * to be written into the word (the total number is nwords+1)
+         *
+         * Returns a reversed 32-bit word (LSB of ret val is the parity bit).
+         */
+        uint32_t
+        make_numeric_vector(uint32_t vector_type, uint32_t message_start, uint32_t nwords, uint32_t cksum) {
+            uint32_t dw = 0;
+            dw |= (vector_type & 0x7) << 4;
+            dw |= (message_start & 0x7f) << 7;
+            dw |= (nwords & 0x7) << 14;
+            dw |= (cksum & 0xf) << 17;
+            add_flex_checksum(dw);
+            uint32_t encoded = encodeword(reverse_bits32(dw));
             return encoded;
         }
 
@@ -118,7 +164,38 @@ namespace gr {
                 queue(a1);
                 queue(b);
                 queue(a1_inv);
+                printf("XXX FIW %x\n", fiw);
                 queue(fiw);
+                queue(cblock);
+                printf("XXX before blocks sz %lu\n", d_bitqueue.size());
+                for(unsigned int block = 0; block < 11; block++) {
+                    uint32_t biw1 = make_biw1(0, 0, 2, 0, 0);
+                    uint32_t addr1 = make_short_address(1337331);
+                    
+
+                    queue(biw1);
+                    queue(addr1);
+
+                    uint32_t msgx = (0x6 << 2) | (0x9 << 6) | (0xc << 10) | (0xc << 14);
+                    uint32_t binsum = (msgx & 0xff)
+                        + ((msgx >> 8) & 0xff)
+                        + ((msgx >> 16) & 0x1f);
+                    binsum &= 0xff;
+                    uint32_t tempsum = (binsum & 0x1f) + ((binsum >> 6) & 0x3);
+                    uint32_t msg_checksum = ~(tempsum);
+
+                    msgx |= ((msg_checksum >> 4) & 0x3);
+                    uint32_t encoded_msg = encodeword(reverse_bits32(msgx));
+
+                    
+                    queue(make_numeric_vector(3, 3, 0, (msg_checksum & 0xf)));
+                    queue(encoded_msg);
+                    queue(bit_sync_1);
+                    queue(bit_sync_1);
+                    queue(bit_sync_1);
+                    queue(bit_sync_1);
+                    printf("XXX after block %u sz %lu\n", block, d_bitqueue.size());
+                }
             }
         }
 
