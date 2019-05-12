@@ -39,6 +39,7 @@ namespace gr {
         void queue_batch();
         void queue_flex_batch();
         void queue(shared_ptr<bvec> bvptr);
+        void queue(uint8_t *arr, size_t sz);
         void queue(uint32_t val);
         int work(int noutput_items,
            gr_vector_const_void_star &input_items,

@@ -17,6 +17,7 @@
 
 using namespace itpp;
 using std::string;
+using std::vector;
 using boost::shared_ptr;
 
 
@@ -151,12 +152,39 @@ namespace gr {
         }
 
         void
+        interleave(uint32_t *words, uint8_t *interleaved) {
+            unsigned int il = 0;
+            for(unsigned int i = 0; i < 32; i++) {
+                for(unsigned int j = 0; j < 8; j++) {
+                    interleaved[il++] = ((words[j] & 0x80000000) == 0x80000000) ? 1 : 0;
+                    words[j] = words[j] << 1;
+                }
+            }
+            assert(il == 256);
+        }
+
+        void
         flexencode_impl::queue_flex_batch() {
             static const shared_ptr<bvec> bit_sync_1 = get_vec("10101010101010101010101010101010");
+            static const shared_ptr<bvec> bs =         get_vec("1010101010101010");
+            static const shared_ptr<bvec> bs_inv =     get_vec("0101010101010101");
             static const shared_ptr<bvec> a1 =         get_vec("01111000111100110101100100111001");
-            static const shared_ptr<bvec> b          = get_vec("0101010101010101");
             static const shared_ptr<bvec> a1_inv =     get_vec("10000111000011001010011011000110");
+            static const shared_ptr<bvec> ar =         get_vec("11001011001000000101100100111001");
+            static const shared_ptr<bvec> ar_inv =     get_vec("00110100110111111010011011000110");
+            static const shared_ptr<bvec> b          = get_vec("0101010101010101");
             static const shared_ptr<bvec> cblock =     get_vec("1010111011011000010001010001001001111011");
+            uint32_t idle_word = 0;
+            encodeword(reverse_bits32(idle_word));
+            uint32_t idle_word2 = 0x1FFFFF;
+            encodeword(reverse_bits32(idle_word2));
+
+            for(unsigned int i = 0; i < 20; i++) {
+                queue(bs);
+                queue(ar);
+                queue(bs_inv);
+                queue(ar_inv);
+            }
 
             for(unsigned int frame = 0; frame < 10; frame++) {
                 uint32_t fiw = make_fiw(0, frame, 0, 0, 0x0);
@@ -169,31 +197,37 @@ namespace gr {
                 queue(cblock);
                 printf("XXX before blocks sz %lu\n", d_bitqueue.size());
                 for(unsigned int block = 0; block < 11; block++) {
-                    uint32_t biw1 = make_biw1(0, 0, 2, 0, 0);
-                    uint32_t addr1 = make_short_address(1337331);
-                    
+                    uint32_t blockwords[8];
+                    uint8_t interleaved[256];
 
-                    queue(biw1);
-                    queue(addr1);
+                    uint32_t biw1 = make_biw1(0, 0, 2, 0, 0);
+                    uint32_t addr1 = make_short_address(1337331 + 32768);
+                    
+                    blockwords[0] = biw1;
+                    blockwords[1] = addr1;
 
                     uint32_t msgx = (0x6 << 2) | (0x9 << 6) | (0xc << 10) | (0xc << 14);
                     uint32_t binsum = (msgx & 0xff)
                         + ((msgx >> 8) & 0xff)
                         + ((msgx >> 16) & 0x1f);
                     binsum &= 0xff;
-                    uint32_t tempsum = (binsum & 0x1f) + ((binsum >> 6) & 0x3);
-                    uint32_t msg_checksum = ~(tempsum);
+                    uint32_t tempsum = (binsum & 0x3f) + ((binsum >> 6) & 0x3);
+                    uint32_t msg_checksum = (~(tempsum) & 0x3f);
 
                     msgx |= ((msg_checksum >> 4) & 0x3);
                     uint32_t encoded_msg = encodeword(reverse_bits32(msgx));
+                    std::cout << "XXX encoded_msg: " << u32tostring(encoded_msg) << std::endl;
+
 
                     
-                    queue(make_numeric_vector(3, 3, 0, (msg_checksum & 0xf)));
-                    queue(encoded_msg);
-                    queue(bit_sync_1);
-                    queue(bit_sync_1);
-                    queue(bit_sync_1);
-                    queue(bit_sync_1);
+                    blockwords[2] = make_numeric_vector(3, 3, 1, (msg_checksum & 0xf));
+                    blockwords[3] = encoded_msg;
+                    blockwords[4] = idle_word;
+                    blockwords[5] = idle_word2;
+                    blockwords[6] = idle_word;
+                    blockwords[7] = idle_word2;
+                    interleave(blockwords, interleaved);
+                    queue(interleaved, 256);
                     printf("XXX after block %u sz %lu\n", block, d_bitqueue.size());
                 }
             }
@@ -258,6 +292,12 @@ namespace gr {
                 }
             }
         }
+        void 
+        flexencode_impl::queue(uint8_t *arr, size_t sz) {
+            for(size_t i = 0; i < sz; i++) {
+                queuebit(arr[i] == 0 ? 0 : 1);
+            }
+        }
 
         void 
         flexencode_impl::queue(shared_ptr<bvec> bvptr) {
@@ -276,7 +316,7 @@ namespace gr {
 
 
         flexencode_impl::flexencode_impl()
-          : d_baudrate(1600), d_capcode(425321), d_msgtype(Alpha), d_message("hello"), d_symrate(6400), 
+          : d_baudrate(1600), d_capcode(425321), d_msgtype(Alpha), d_message("hello"), d_symrate(64000), 
           sync_block("flexencode",
                   io_signature::make(0, 0, 0),
                   io_signature::make(1, 1, sizeof (unsigned char)))
@@ -325,10 +365,10 @@ namespace gr {
                 const bool bbit = d_bitqueue.front();
                 switch((int)bbit) {
                     case 0:
-                        out[i] = 1;
+                        out[i] = -1;
                         break;
                     case 1:
-                        out[i] = -1;
+                        out[i] = 1;
                         break;
                     default:
                         std::cout << "invalid value in bitqueue" << std::endl;
