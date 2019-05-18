@@ -150,6 +150,25 @@ namespace gr {
             return encoded;
         }
 
+        /**
+         * Make an alphanumeric vector word.
+         *
+         * NOTE: Unlike with numeric vector words, the nwords parameter is actually the
+         * total number of message words.
+         *
+         * Returns a reversed 32-bit word (LSB of ret val is the parity bit).
+         */
+        uint32_t
+        make_alphanumeric_vector(uint32_t message_start, uint32_t nwords) {
+            uint32_t dw = 0;
+            dw |= (0x5) << 4;
+            dw |= (message_start & 0x7f) << 7;
+            dw |= (nwords & 0x7f) << 14;
+            add_flex_checksum(dw);
+            uint32_t encoded = encodeword(reverse_bits32(dw));
+            return encoded;
+        }
+
         void
         interleave(uint32_t *words, uint8_t *interleaved) {
             unsigned int il = 0;
@@ -207,7 +226,8 @@ namespace gr {
                 allwords.insert(allwords.end(), addrwords.begin(), addrwords.end());
 
                 uint32_t new_msg_checksum;
-                make_standard_numeric_msg(1, allwords.size()+1, "11111111112222222222333333333301234567890", vecwords, msgwords, new_msg_checksum);
+                //make_standard_numeric_msg(1, allwords.size()+1, "11111111112222222222333333333301234567890", vecwords, msgwords, new_msg_checksum);
+                make_alphanumeric_msg(1, allwords.size()+1, "\nGRAND CENTRAL\nHACK THE PLANET", vecwords, msgwords);
                 allwords.insert(allwords.end(), vecwords.begin(), vecwords.end());
                 allwords.insert(allwords.end(), msgwords.begin(), msgwords.end());
                 while(allwords.size() < 88) {
@@ -272,11 +292,72 @@ namespace gr {
         }
 
         void
+        flexencode_impl::make_alphanumeric_msg(unsigned int num_address_words, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords) {
+            assert(num_address_words == 1);     // XXX no long address yet
+            const int len = msg.length();
+            if(len < 1 || len > 252) {
+                std::cerr << "warning: invalid alphanumeric message len: " << len << std::endl;
+                return;
+            }
+            uint32_t msgbuf[85];
+            for(int i = 0; i < 85; i++) {
+                msgbuf[i] = 0;
+            }
+
+            // First, fill in the actual message characters.  
+            uint32_t wordidx = 1;
+            uint32_t bitidx = 7;
+            for(int i = 0; i < len; i++) {
+                msgbuf[wordidx] |= ((msg[i] & 0x7f) << bitidx);
+                bitidx += 7;
+                if(bitidx == 21) {
+                    bitidx = 0;
+                    wordidx++;
+                }
+            }
+            if(bitidx == 7) {
+                msgbuf[wordidx] |= (((0x03) << 7) | ((0x03) << 14));
+                wordidx++;
+            } else if(bitidx == 14) {
+                msgbuf[wordidx] |= ((0x03) << 14);
+                wordidx++;
+            }
+            // Then, calculate the signature (S) over the message.
+            // XXX: should we include 0x03 padding in this calculation?
+            uint32_t sig = 0;
+            for(int i = 1; i < wordidx; i++) {
+                sig += (msgbuf[wordidx] & 0x7f);
+                sig += ((msgbuf[wordidx] >> 7) & 0x7f);
+                sig += ((msgbuf[wordidx] >> 14) & 0x7f);
+            }
+            sig = ~sig;
+            msgbuf[1] |= (sig & 0x7f);
+
+            msgbuf[0] |= (0x3 << 11);       // F = 0b11, 3.8.8.3
+
+            // Now, we calculate the fragment checksum K.
+            uint32_t binsum = 0;
+            for(uint32_t i = 0; i < wordidx; i++) {
+                uint32_t mw = msgbuf[i];
+                uint32_t wordsum = (mw & 0xff) + ((mw >> 8) & 0xff) + ((mw >> 16) & 0x1f);
+                binsum += wordsum;
+            }
+            uint32_t msg_checksum = (~(binsum) & 0x3ff);
+            msgbuf[0] |= (msg_checksum & 0x3ff);
+
+            uint32_t vecword = make_alphanumeric_vector(message_start, wordidx);
+            vecwords.push_back(vecword);
+            for(uint32_t i = 0; i < wordidx; i++) {
+                msgwords.push_back(encodeword(reverse_bits32(msgbuf[i])));
+            }
+        }
+
+        void
         flexencode_impl::make_standard_numeric_msg(unsigned int num_address_words, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords, uint32_t &checksum) {
             assert(num_address_words == 1);     // XXX no long address yet
             const int len = msg.length();
             if(len < 1 || len > 41) {
-                std::cerr << "warning: invalid message len: " << len << std::endl;
+                std::cerr << "warning: invalid numeric message len: " << len << std::endl;
                 return;
             }
             uint32_t msgbuf[8];
