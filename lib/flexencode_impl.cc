@@ -12,7 +12,6 @@
 #include "flexencode_impl.h"
 #include <iostream>
 #include <sstream>
-#include <vector>
 #include "utils.h"
 
 using namespace itpp;
@@ -179,14 +178,14 @@ namespace gr {
             uint32_t idle_word2 = 0x1FFFFF;
             encodeword(reverse_bits32(idle_word2));
 
-            for(unsigned int i = 0; i < 20; i++) {
+            for(unsigned int i = 0; i < 25; i++) {
                 queue(bs);
                 queue(ar);
                 queue(bs_inv);
                 queue(ar_inv);
             }
 
-            for(unsigned int frame = 0; frame < 10; frame++) {
+            for(unsigned int frame = 0; frame < 1; frame++) {
                 uint32_t fiw = make_fiw(0, frame, 0, 0, 0x0);
                 queue(bit_sync_1);
                 queue(a1);
@@ -196,40 +195,214 @@ namespace gr {
                 queue(fiw);
                 queue(cblock);
                 printf("XXX before blocks sz %lu\n", d_bitqueue.size());
+
+                vector<uint32_t> addrwords;
+                vector<uint32_t> vecwords;
+                vector<uint32_t> msgwords;
+
+                addrwords.push_back(make_short_address(1337331 + 32768));
+
+                vector<uint32_t> allwords;
+                allwords.push_back(make_biw1(0, 0, 1+addrwords.size(), 0, 0));
+                allwords.insert(allwords.end(), addrwords.begin(), addrwords.end());
+
+                uint32_t new_msg_checksum;
+                make_standard_numeric_msg(1, allwords.size()+1, "11111111112222222222333333333301234567890", vecwords, msgwords, new_msg_checksum);
+                allwords.insert(allwords.end(), vecwords.begin(), vecwords.end());
+                allwords.insert(allwords.end(), msgwords.begin(), msgwords.end());
+                while(allwords.size() < 88) {
+                    if((allwords.size() % 2) == 0) {
+                        allwords.push_back(idle_word);
+                    } else {
+                        allwords.push_back(idle_word2);
+                    }
+                }
+                auto blockiter = allwords.begin();
                 for(unsigned int block = 0; block < 11; block++) {
+                    assert(blockiter != allwords.end());
                     uint32_t blockwords[8];
                     uint8_t interleaved[256];
-
-                    uint32_t biw1 = make_biw1(0, 0, 2, 0, 0);
-                    uint32_t addr1 = make_short_address(1337331 + 32768);
-                    
-                    blockwords[0] = biw1;
-                    blockwords[1] = addr1;
-
-                    uint32_t msgx = (0x6 << 2) | (0x9 << 6) | (0xc << 10) | (0xc << 14);
-                    uint32_t binsum = (msgx & 0xff)
-                        + ((msgx >> 8) & 0xff)
-                        + ((msgx >> 16) & 0x1f);
-                    binsum &= 0xff;
-                    uint32_t tempsum = (binsum & 0x3f) + ((binsum >> 6) & 0x3);
-                    uint32_t msg_checksum = (~(tempsum) & 0x3f);
-
-                    msgx |= ((msg_checksum >> 4) & 0x3);
-                    uint32_t encoded_msg = encodeword(reverse_bits32(msgx));
-                    std::cout << "XXX encoded_msg: " << u32tostring(encoded_msg) << std::endl;
-
-
-                    
-                    blockwords[2] = make_numeric_vector(3, 3, 1, (msg_checksum & 0xf));
-                    blockwords[3] = encoded_msg;
-                    blockwords[4] = idle_word;
-                    blockwords[5] = idle_word2;
-                    blockwords[6] = idle_word;
-                    blockwords[7] = idle_word2;
+                    for(int i = 0; i < 8; i++) {
+                        blockwords[i] = *blockiter;
+                        blockiter++;
+                    }
                     interleave(blockwords, interleaved);
                     queue(interleaved, 256);
-                    printf("XXX after block %u sz %lu\n", block, d_bitqueue.size());
                 }
+
+
+// XXX REMOVE
+//                for(unsigned int block = 0; block < 11; block++) {
+//                    uint32_t blockwords[8];
+//                    uint8_t interleaved[256];
+//
+//                    uint32_t biw1 = make_biw1(0, 0, 2, 0, 0);
+//                    uint32_t addr1 = make_short_address(1337331 + 32768);
+//                    
+//                    blockwords[0] = biw1;
+//                    blockwords[1] = addr1;
+//
+//
+//                    uint32_t msgx = (0x6 << 2) | (0x9 << 6) | (0xc << 10) | (0xc << 14);
+//                    uint32_t binsum = (msgx & 0xff)
+//                        + ((msgx >> 8) & 0xff)
+//                        + ((msgx >> 16) & 0x1f);
+//                    binsum &= 0xff;
+//                    uint32_t tempsum = (binsum & 0x3f) + ((binsum >> 6) & 0x3);
+//                    uint32_t msg_checksum = (~(tempsum) & 0x3f);
+//
+//                    msgx |= ((msg_checksum >> 4) & 0x3);
+//                    uint32_t encoded_msg = encodeword(reverse_bits32(msgx));
+//                    std::cout << "XXX encoded_msg: " << u32tostring(encoded_msg) << std::endl;
+//
+//
+//                    
+//                    // XXX: TRY nwords 0!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//                    blockwords[2] = make_numeric_vector(3, 3, 0, (msg_checksum & 0xf));
+//                    blockwords[3] = encoded_msg;
+//                    blockwords[4] = idle_word;
+//                    blockwords[5] = idle_word2;
+//                    blockwords[6] = idle_word;
+//                    blockwords[7] = idle_word2;
+//                    interleave(blockwords, interleaved);
+//                    queue(interleaved, 256);
+//                    printf("XXX after block %u sz %lu\n", block, d_bitqueue.size());
+//                }
+            }
+        }
+
+        void
+        flexencode_impl::make_standard_numeric_msg(unsigned int num_address_words, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords, uint32_t &checksum) {
+            assert(num_address_words == 1);     // XXX no long address yet
+            const int len = msg.length();
+            if(len < 1 || len > 41) {
+                std::cerr << "warning: invalid message len: " << len << std::endl;
+                return;
+            }
+            uint32_t msgbuf[8];
+            for(int i = 0; i < 8; i++) {
+                msgbuf[i] = 0;
+            }
+            uint32_t curbit = 2;
+            for(int i = 0; i < len; i++) {
+                char c = msg[i];
+                uint32_t val = 0;
+                switch(c) {
+                    case '0':
+                        val = 0;
+                        break;
+                    case '1':
+                        val = 1;
+                        break;
+                    case '2':
+                        val = 2;
+                        break;
+                    case '3':
+                        val = 3;
+                        break;
+                    case '4':
+                        val = 4;
+                        break;
+                    case '5':
+                        val = 5;
+                        break;
+                    case '6':
+                        val = 6;
+                        break;
+                    case '7':
+                        val = 7;
+                        break;
+                    case '8':
+                        val = 8;
+                        break;
+                    case '9':
+                        val = 9;
+                        break;
+                    case 'S':
+                    case 'A':
+                        val = 0xa;
+                        break;
+                    case 'U':
+                    case 'B':
+                        val = 0xb;
+                        break;
+                    case ' ':
+                        val = 0xc;
+                        break;
+                    case '-':
+                    case 'C':
+                        val = 0xd;
+                        break;
+                    case ']':
+                    case ')':
+                    case 'D':
+                        val = 0xe;
+                        break;
+                    case '[':
+                    case '(':
+                    case 'E':
+                        val = 0xf;
+                        break;
+                    default:
+                        std::cerr << "warning: invalid character in message: " << c << std::endl;
+                        return;
+                }
+                const int wordidx = curbit / 21;
+                const int bitidx = curbit % 21;
+                if((21 - bitidx) >= 4) {
+                    msgbuf[wordidx] |= (val << bitidx);
+                } else {
+                    const int firstpart = 21-bitidx;
+                    const uint32_t firstmask = ((uint32_t)~(0)) >> (32-firstpart);
+                    msgbuf[wordidx] |= ((val & firstmask) << bitidx);
+                    msgbuf[wordidx+1] |= (val >> firstpart);
+                }
+                curbit += 4;
+            }
+
+            // Now, count the number of words.  If curbit is at an even word boundary
+            // (e.g. at the 3rd word or the 7th word -- see 3.8.8.1), then we don't need
+            // to do any filling.  Otherwise, fill all remaining 4-char blocks with 0xc
+            // and all remaining spaces with zeroes (we set these all to 0 initially so
+            // this is done for us)
+
+            uint32_t nwords = 0;
+            if((curbit % 21) == 0) {
+                nwords = curbit / 21;
+            } else {
+                const uint32_t fillidx = (curbit / 21);
+                const uint32_t nspaces = (21-(curbit % 21)) / 4;
+                for(uint32_t i = 0; i < nspaces; i++) {
+                    const int bitidx = curbit % 21;
+                    assert((21-bitidx) >= 4);
+                    msgbuf[fillidx] |= (0xc << bitidx);
+                    curbit += 4;
+                }
+                nwords = fillidx+1;
+            }
+            assert(message_start+nwords <= 88);
+
+            // Now, calculate the checksum according to 3.8.8.1.
+            uint32_t binsum = 0;
+            for(uint32_t i = 0; i < nwords; i++) {
+                uint32_t mw = msgbuf[i];
+                uint32_t wordsum = (mw & 0xff) + ((mw >> 8) & 0xff) + ((mw >> 16) & 0x1f);
+                binsum += wordsum;
+            }
+            binsum &= 0xff;
+            uint32_t tempsum = (binsum & 0x3f) + ((binsum >> 6) & 0x3);
+            uint32_t msg_checksum = (~(tempsum) & 0x3f);
+
+            // Now that we've calculated the checksum, we can fill in the first two bits
+            // (which are the two most-significant bits in the checksum value)
+            msgbuf[0] |= ((msg_checksum >> 4) & 0x3);
+
+            uint32_t vecword = make_numeric_vector(3, message_start, nwords-1, (msg_checksum & 0xf));
+
+            checksum = msg_checksum;
+            vecwords.push_back(vecword);
+            for(uint32_t i = 0; i < nwords; i++) {
+                msgwords.push_back(encodeword(reverse_bits32(msgbuf[i])));
             }
         }
 

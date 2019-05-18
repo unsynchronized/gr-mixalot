@@ -9,10 +9,12 @@
 
 #include <mixalot/flexencode.h>
 #include <queue>
+#include <vector>
 #include <itpp/comm/bch.h>
 
 using namespace itpp;
 using std::string;
+using std::vector;
 using boost::shared_ptr;
 
 
@@ -24,7 +26,7 @@ namespace gr {
     private:
         std::queue<bool> d_bitqueue;   // Queue of symbols to be sent out.
         msgtype_t d_msgtype;                // message type
-        unsigned int d_baudrate;            // baud rate to transmit at -- should be 512, 1200, or 2400 (although others will work!)
+        unsigned int d_baudrate;            // baud rate to transmit at
         unsigned int d_capcode;             // capcode (pager ID)
         unsigned long d_symrate;            // output symbol rate (must be evenly divisible by the baud rate)
         std::string d_message;              // message to send
@@ -35,9 +37,11 @@ namespace gr {
       flexencode_impl();
       ~flexencode_impl();
 
-      // Where all the action really happens
         void queue_batch();
         void queue_flex_batch();
+
+        void make_standard_numeric_msg(unsigned int nwords, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords, uint32_t &checksum);
+
         void queue(shared_ptr<bvec> bvptr);
         void queue(uint8_t *arr, size_t sz);
         void queue(uint32_t val);
