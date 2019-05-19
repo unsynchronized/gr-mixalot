@@ -10,6 +10,10 @@
 
 #include <gnuradio/io_signature.h>
 #include "flexencode_impl.h"
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/trim.hpp>
+
 #include <iostream>
 #include <sstream>
 #include "utils.h"
@@ -227,7 +231,7 @@ namespace gr {
 
                 uint32_t new_msg_checksum;
                 //make_standard_numeric_msg(1, allwords.size()+1, "11111111112222222222333333333301234567890", vecwords, msgwords, new_msg_checksum);
-                make_alphanumeric_msg(1, allwords.size()+1, "\nGRAND CENTRAL\nHACK THE PLANET", vecwords, msgwords);
+                make_alphanumeric_msg(1, allwords.size()+1, "abcdefghijklmnopqrstuvwxyz", vecwords, msgwords);
                 allwords.insert(allwords.end(), vecwords.begin(), vecwords.end());
                 allwords.insert(allwords.end(), msgwords.begin(), msgwords.end());
                 while(allwords.size() < 88) {
@@ -580,6 +584,52 @@ namespace gr {
                 throw std::runtime_error("Output symbol rate is not evenly divisible by baud rate");
             }
             queue_flex_batch();
+
+            message_port_register_out(pmt::mp("beeps_output"));
+            message_port_register_in(pmt::mp("beeps"));
+            set_msg_handler(pmt::mp("beeps"),
+                boost::bind(&flexencode_impl::beeps_message, this, _1)
+            );
+        }
+		void flexencode_impl::beeps_output(const char *msg) {
+			pmt::pmt_t pdu = pmt::cons(pmt::make_dict(), pmt::init_u8vector(strlen(msg), (const uint8_t *)msg));
+			message_port_pub(pmt::mp("beeps_output"), pdu);
+
+		}
+
+		void
+        flexencode_impl::beeps_message(pmt::pmt_t msg) {
+			pmt::pmt_t cmdvec = cdr(msg);
+			if(is_u8vector(cmdvec) == false) {
+				std::cerr << "WARNING beeps message: got invalid message: " << msg << std::endl;
+                beeps_output("BADCMD\n");
+				return;
+			}
+			const std::vector<uint8_t> cmdchars = u8vector_elements(cmdvec);
+			char carray[cmdchars.size()+1];
+			memset(carray, 0, cmdchars.size()+1);
+			for(size_t i = 0; i < cmdchars.size(); i++) {
+				carray[i] = cmdchars[i];
+			}
+			std::string cmdstr(carray);
+            boost::trim(cmdstr);
+
+            vector<string> tokens;
+            boost::split(tokens, cmdstr, boost::is_space(), boost::token_compress_on);
+            if(tokens.size() < 1 || tokens[0].length() < 1) {
+                return;
+            }
+            // flex 0 931337500 alpha 1337331 41424344
+            // flex 1 931337500 numeric 1337331 3133731337A
+            if(tokens[0].compare("flex") && tokens.size() >= 6) {
+                string cmdid = tokens[1];
+                string freqhz = tokens[2];
+                string msgtype = tokens[3];
+                string capcodes = tokens[4];
+                string message = tokens[5];
+            }
+            queue_flex_batch();
+            beeps_output("BEEPED\n");
         }
 
         // Insert bits into the queue.  Here is also where we repeat a single bit
@@ -611,7 +661,7 @@ namespace gr {
             unsigned char *out = (unsigned char *) output_items[0];
 
             if(d_bitqueue.empty()) {
-                return -1;
+                return 0;
             }
             const int toxfer = noutput_items < d_bitqueue.size() ? noutput_items : d_bitqueue.size();
             assert(toxfer >= 0);

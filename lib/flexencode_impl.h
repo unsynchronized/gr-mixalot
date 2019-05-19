@@ -42,6 +42,8 @@ namespace gr {
 
         void make_standard_numeric_msg(unsigned int nwords, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords, uint32_t &checksum);
         void make_alphanumeric_msg(unsigned int num_address_words, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords);
+        void beeps_message(pmt::pmt_t msg);
+		void beeps_output(const char *msg);
 
         void queue(shared_ptr<bvec> bvptr);
         void queue(uint8_t *arr, size_t sz);

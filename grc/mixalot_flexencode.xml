@@ -42,9 +42,22 @@
     </param>
 -->
 
+    <sink>
+        <name>beeps</name>
+        <type>message</type>
+        <optional>1</optional>
+    </sink>
+
     <source>
         <name>out</name>
         <type>byte</type>
         <vlen>1</vlen>
     </source>
+
+    <source>
+        <name>beeps_output</name>
+        <type>message</type>
+        <optional>1</optional>
+    </source>
+
 </block>
