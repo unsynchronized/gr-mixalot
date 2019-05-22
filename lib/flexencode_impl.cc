@@ -113,9 +113,9 @@ namespace gr {
 
             add_flex_checksum(dw);
             uint32_t encoded = encodeword(reverse_bits32(dw));
-            std::cout << "XXX BIW1 for encoded: " << std::hex << encoded << std::endl;
+            std::cout << "XXX BIW1 for encoded: " << std::hex << encoded << std::dec << std::endl;
             std::cout << "XXX: " << u32tostring(encoded) << std::endl;
-            std::cout << "XXX BIW1 rev encoded: " << std::hex << reverse_bits32(encoded) << std::endl;
+            std::cout << "XXX BIW1 rev encoded: " << std::hex << reverse_bits32(encoded) << std::dec << std::endl;
             std::cout << "XXX: " << u32tostring(reverse_bits32(encoded)) << std::endl;
             return encoded;
         }
@@ -123,15 +123,19 @@ namespace gr {
         /**
          * Make a short-address word.
          *
-         * Returns a reversed 32-bit word (LSB of ret val is the parity bit).
+         * Returns a reversed 32-bit word (LSB of ret val is the parity bit), or 0 if
+         * error.
          */
         uint32_t
         make_short_address(uint32_t address) {
-            assert(address >= 32769 && address <= 1966080);
-            uint32_t dw = 0;
-            dw |= (address & 0x1FFFFF);
-            uint32_t encoded = encodeword(reverse_bits32(dw));
-            return encoded;
+            if(address >= 32769 && address <= 1966080) {
+                uint32_t dw = 0;
+                dw |= (address & 0x1FFFFF);
+                uint32_t encoded = encodeword(reverse_bits32(dw));
+                return encoded;
+            } else {
+                return 0;
+            }
         }
 
         /**
@@ -185,8 +189,8 @@ namespace gr {
             assert(il == 256);
         }
 
-        void
-        flexencode_impl::queue_flex_batch() {
+        bool
+        flexencode_impl::queue_flex_batch(const msgtype_t msgtype, const vector<uint32_t> &codes, const char *msgbody) {
             static const shared_ptr<bvec> bit_sync_1 = get_vec("10101010101010101010101010101010");
             static const shared_ptr<bvec> bs =         get_vec("1010101010101010");
             static const shared_ptr<bvec> bs_inv =     get_vec("0101010101010101");
@@ -200,6 +204,7 @@ namespace gr {
             encodeword(reverse_bits32(idle_word));
             uint32_t idle_word2 = 0x1FFFFF;
             encodeword(reverse_bits32(idle_word2));
+            boost::mutex::scoped_lock lock(bitqueue_mutex);
 
             for(unsigned int i = 0; i < 25; i++) {
                 queue(bs);
@@ -223,15 +228,36 @@ namespace gr {
                 vector<uint32_t> vecwords;
                 vector<uint32_t> msgwords;
 
-                addrwords.push_back(make_short_address(1337331 + 32768));
+                for(auto it = codes.begin(); it != codes.end(); it++) {
+                    uint32_t addr = make_short_address(*it + 32768);
+                    if(addr == 0) {    // 0 is not a valid codeword for what we're doing here, so we use it as an error
+                        std::cerr << "couldn't get address for capcode " << *it << std::endl;
+                        return false;
+                    }
+                    std::cout << "XXX adding word for address " << *it << std::endl;
+                    addrwords.push_back(addr);
+                }
+                std:::cout << "XXX address words size " << addrwords.size() << std::endl;
 
                 vector<uint32_t> allwords;
                 allwords.push_back(make_biw1(0, 0, 1+addrwords.size(), 0, 0));
                 allwords.insert(allwords.end(), addrwords.begin(), addrwords.end());
 
                 uint32_t new_msg_checksum;
-                //make_standard_numeric_msg(1, allwords.size()+1, "11111111112222222222333333333301234567890", vecwords, msgwords, new_msg_checksum);
-                make_alphanumeric_msg(1, allwords.size()+1, "abcdefghijklmnopqrstuvwxyz", vecwords, msgwords);
+                if(msgtype == Alpha) {
+                    if(make_alphanumeric_msg(1, allwords.size()+1, msgbody, vecwords, msgwords) == false) {
+                        std::cerr << "couldn't make alphanumeric message word" << std::endl;
+                        return false;
+                    }
+                } else if(msgtype == Numeric) {
+                    if(make_standard_numeric_msg(1, allwords.size()+1, msgbody, vecwords, msgwords, new_msg_checksum) == false) {
+                        std::cerr << "couldn't make numeric message word" << std::endl;
+                        return false;
+                    }
+                } else {
+                    std::cerr << "WARNING: invalid msgtype " << msgtype << std::endl;
+                    return false;
+                }
                 allwords.insert(allwords.end(), vecwords.begin(), vecwords.end());
                 allwords.insert(allwords.end(), msgwords.begin(), msgwords.end());
                 while(allwords.size() < 88) {
@@ -293,15 +319,16 @@ namespace gr {
 //                    printf("XXX after block %u sz %lu\n", block, d_bitqueue.size());
 //                }
             }
+            return true;
         }
 
-        void
+        bool
         flexencode_impl::make_alphanumeric_msg(unsigned int num_address_words, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords) {
             assert(num_address_words == 1);     // XXX no long address yet
             const int len = msg.length();
             if(len < 1 || len > 252) {
                 std::cerr << "warning: invalid alphanumeric message len: " << len << std::endl;
-                return;
+                return false;
             }
             uint32_t msgbuf[85];
             for(int i = 0; i < 85; i++) {
@@ -354,15 +381,16 @@ namespace gr {
             for(uint32_t i = 0; i < wordidx; i++) {
                 msgwords.push_back(encodeword(reverse_bits32(msgbuf[i])));
             }
+            return true;
         }
 
-        void
+        bool
         flexencode_impl::make_standard_numeric_msg(unsigned int num_address_words, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords, uint32_t &checksum) {
             assert(num_address_words == 1);     // XXX no long address yet
             const int len = msg.length();
             if(len < 1 || len > 41) {
                 std::cerr << "warning: invalid numeric message len: " << len << std::endl;
-                return;
+                return false;
             }
             uint32_t msgbuf[8];
             for(int i = 0; i < 8; i++) {
@@ -430,7 +458,7 @@ namespace gr {
                         break;
                     default:
                         std::cerr << "warning: invalid character in message: " << c << std::endl;
-                        return;
+                        return false;
                 }
                 const int wordidx = curbit / 21;
                 const int bitidx = curbit % 21;
@@ -489,6 +517,7 @@ namespace gr {
             for(uint32_t i = 0; i < nwords; i++) {
                 msgwords.push_back(encodeword(reverse_bits32(msgbuf[i])));
             }
+            return true;
         }
 
 
@@ -583,7 +612,7 @@ namespace gr {
                 std::cerr << "Output symbol rate must be evenly divisible by baud rate!" << std::endl;
                 throw std::runtime_error("Output symbol rate is not evenly divisible by baud rate");
             }
-            queue_flex_batch();
+            //queue_flex_batch(Alpha, vector<uint32_t>(1, 1337331), "started");  // XXX
 
             message_port_register_out(pmt::mp("beeps_output"));
             message_port_register_in(pmt::mp("beeps"));
@@ -591,7 +620,8 @@ namespace gr {
                 boost::bind(&flexencode_impl::beeps_message, this, _1)
             );
         }
-		void flexencode_impl::beeps_output(const char *msg) {
+		void flexencode_impl::beeps_output(string const &msgtext) {
+            const char *msg = msgtext.c_str();
 			pmt::pmt_t pdu = pmt::cons(pmt::make_dict(), pmt::init_u8vector(strlen(msg), (const uint8_t *)msg));
 			message_port_pub(pmt::mp("beeps_output"), pdu);
 
@@ -621,15 +651,57 @@ namespace gr {
             }
             // flex 0 931337500 alpha 1337331 41424344
             // flex 1 931337500 numeric 1337331 3133731337A
-            if(tokens[0].compare("flex") && tokens.size() >= 6) {
+            if(tokens[0].compare("flex") == 0 && tokens.size() >= 6) {
                 string cmdid = tokens[1];
                 string freqhz = tokens[2];
                 string msgtype = tokens[3];
-                string capcodes = tokens[4];
+                string capcodestr = tokens[4];
                 string message = tokens[5];
+
+                errno = 0;
+                unsigned long freq = strtoul(freqhz.c_str(), 0, 10);
+                if((freq == ULONG_MAX || freq == 0) && errno != 0) {
+                    std::cerr << "WARNING beeps message: invalid freq: " << freqhz << std::endl;
+                    beeps_output(cmdid + " ERROR");
+                    return;
+                }
+                vector<string> capcodes;
+                boost::split(capcodes, capcodestr, boost::is_any_of(","), boost::token_compress_on);
+                if(capcodes.size() < 1 || tokens[0].length() < 1) {
+                    std::cerr << "WARNING beeps message: got bad capcode str: " << capcodestr << std::endl;
+                    beeps_output(cmdid + " ERROR");
+                    return;
+                }
+                vector<uint32_t> codes;
+                for(auto it = capcodes.begin(); it != capcodes.end(); it++) {
+                    errno = 0;
+                    unsigned long code = strtoul((*it).c_str(), 0, 10);
+                    if(code > UINT32_MAX || ((code == ULONG_MAX || code == 0) && errno != 0)) {
+                        std::cerr << "WARNING beeps message: invalid capcode str: " << capcodestr << std::endl;
+                        beeps_output(cmdid + " ERROR");
+                        return;
+                    }
+                    codes.push_back(code);
+                }
+
+
+                if(msgtype.compare("alpha") == 0) {
+                    string realmsg = hex_decode(message);
+                    if(queue_flex_batch(Alpha, codes, realmsg.c_str()) == false) {
+                        beeps_output(cmdid + " ERROR");
+                        return;
+                    }
+                } else if(msgtype.compare("numeric") == 0) {
+                    if(queue_flex_batch(Numeric, codes, message.c_str()) == false) {
+                        beeps_output(cmdid + " ERROR");
+                        return;
+                    }
+                } else {
+                    std::cerr << "WARNING beeps message: invalid type: " << msgtype << std::endl;
+                    beeps_output(cmdid + " ERROR");
+                    return;
+                }
             }
-            queue_flex_batch();
-            beeps_output("BEEPED\n");
         }
 
         // Insert bits into the queue.  Here is also where we repeat a single bit
@@ -660,6 +732,8 @@ namespace gr {
             const float *in = (const float *) input_items[0];
             unsigned char *out = (unsigned char *) output_items[0];
 
+            boost::mutex::scoped_lock lock(bitqueue_mutex);
+
             if(d_bitqueue.empty()) {
                 return 0;
             }
@@ -686,4 +760,8 @@ namespace gr {
         }
     } /* namespace mixalot */
 } /* namespace gr */
+
+// XXX look for all assert
+// XXX look for all printf
+// XXX look for all XXX
 

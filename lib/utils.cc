@@ -214,6 +214,10 @@ namespace gr {
                 msgwords.push_back(msgword);
             }
         }
+        std::string 
+        hex_decode(std::string const &message) {
+            return std::string(message);
+        }
     }
 }
 

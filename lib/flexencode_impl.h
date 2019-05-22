@@ -20,7 +20,7 @@ using boost::shared_ptr;
 
 namespace gr {
   namespace mixalot {
-      
+
     class flexencode_impl : public flexencode
     {
     private:
@@ -38,12 +38,13 @@ namespace gr {
       ~flexencode_impl();
 
         void queue_batch();
-        void queue_flex_batch();
+        bool queue_flex_batch(const msgtype_t msgtype, const vector<uint32_t> &codes, const char *msgbody);
+        boost::mutex bitqueue_mutex;
 
-        void make_standard_numeric_msg(unsigned int nwords, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords, uint32_t &checksum);
-        void make_alphanumeric_msg(unsigned int num_address_words, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords);
+        bool make_standard_numeric_msg(unsigned int nwords, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords, uint32_t &checksum);
+        bool make_alphanumeric_msg(unsigned int num_address_words, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords);
         void beeps_message(pmt::pmt_t msg);
-		void beeps_output(const char *msg);
+		void beeps_output(string const &msgtext);
 
         void queue(shared_ptr<bvec> bvptr);
         void queue(uint8_t *arr, size_t sz);
