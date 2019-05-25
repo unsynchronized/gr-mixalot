@@ -214,9 +214,44 @@ namespace gr {
                 msgwords.push_back(msgword);
             }
         }
+        /**
+         * Decode from %02x-style hex string (41414141) to ASCII (AAAA).
+         * Lossy; this drops nulls and ignores invalid chars.
+         * No unicode here since we're in the 1990s
+         */
         std::string 
         hex_decode(std::string const &message) {
-            return std::string(message);
+            string outmsg = "";
+            size_t sz = message.length();
+            sz >>= 1;
+            sz <<= 1; // clear last bit
+            for(size_t i = 0; i < sz; i += 2) {
+                char outc = 0;
+                char msb = message[i];
+                if(msb >= '0' && msb <= '9') {
+                    outc |= ((msb-'0') & 0xf);
+                } else if(msb >= 'A' && msb <= 'F') {
+                    outc |= ((10+(msb-'A')) & 0xf);
+                } else if(msb >= 'a' && msb <= 'f') {
+                    outc |= ((10+(msb-'a')) & 0xf);
+                } else {
+                    continue;
+                }
+                outc <<= 4;
+                char lsb = message[i+1];
+                if(lsb >= '0' && lsb <= '9') {
+                    outc |= ((lsb-'0') & 0xf);
+                } else if(lsb >= 'A' && lsb <= 'F') {
+                    outc |= ((10+(lsb-'A')) & 0xf);
+                } else if(lsb >= 'a' && lsb <= 'f') {
+                    outc |= ((10+(lsb-'a')) & 0xf);
+                } else {
+                    continue;
+                }
+                outmsg = outmsg + outc;
+            }
+
+            return outmsg;
         }
     }
 }
