@@ -237,7 +237,7 @@ namespace gr {
                     std::cout << "XXX adding word for address " << *it << std::endl;
                     addrwords.push_back(addr);
                 }
-                std:::cout << "XXX address words size " << addrwords.size() << std::endl;
+                std::cout << "XXX address words size " << addrwords.size() << std::endl;
 
                 vector<uint32_t> allwords;
                 allwords.push_back(make_biw1(0, 0, 1+addrwords.size(), 0, 0));
