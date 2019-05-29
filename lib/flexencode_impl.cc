@@ -206,7 +206,7 @@ namespace gr {
             encodeword(reverse_bits32(idle_word2));
             boost::mutex::scoped_lock lock(bitqueue_mutex);
 
-            for(unsigned int i = 0; i < 25; i++) {
+            for(unsigned int i = 0; i < 35; i++) {
                 queue(bs);
                 queue(ar);
                 queue(bs_inv);
