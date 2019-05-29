@@ -692,7 +692,8 @@ namespace gr {
                         return;
                     }
                 } else if(msgtype.compare("numeric") == 0) {
-                    if(queue_flex_batch(Numeric, codes, message.c_str()) == false) {
+                    string realmsg = hex_decode(message);
+                    if(queue_flex_batch(Numeric, codes, realmsg.c_str()) == false) {
                         beeps_output(cmdid + " ERROR");
                         return;
                     }
