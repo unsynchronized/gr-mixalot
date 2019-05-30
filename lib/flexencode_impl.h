@@ -25,6 +25,7 @@ namespace gr {
     {
     private:
         std::queue<bool> d_bitqueue;   // Queue of symbols to be sent out.
+        std::vector<string> d_cmdlist;     // List of command IDs to ack
         msgtype_t d_msgtype;                // message type
         unsigned int d_baudrate;            // baud rate to transmit at
         unsigned int d_capcode;             // capcode (pager ID)
@@ -37,9 +38,12 @@ namespace gr {
       flexencode_impl();
       ~flexencode_impl();
 
+        void clear_cmdid_queue();
+        void add_command_id(std::string cmdid);
         void queue_batch();
         bool queue_flex_batch(const msgtype_t msgtype, const vector<uint32_t> &codes, const char *msgbody);
         boost::mutex bitqueue_mutex;
+        boost::mutex cmdlist_mutex;
 
         bool make_standard_numeric_msg(unsigned int nwords, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords, uint32_t &checksum);
         bool make_alphanumeric_msg(unsigned int num_address_words, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords);

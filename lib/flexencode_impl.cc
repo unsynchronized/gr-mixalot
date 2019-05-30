@@ -657,6 +657,21 @@ namespace gr {
                 boost::bind(&flexencode_impl::beeps_message, this, _1)
             );
         }
+        void
+        flexencode_impl::add_command_id(string cmdid) {
+            boost::mutex::scoped_lock lock(cmdlist_mutex);
+            d_cmdlist.push_back(cmdid);
+        }
+
+        void 
+        flexencode_impl::clear_cmdid_queue() {
+            boost::mutex::scoped_lock lock(cmdlist_mutex);
+            while(!d_cmdlist.empty()) {
+                string cmdid = d_cmdlist.back();
+                beeps_output(cmdid + " OK\n");
+                d_cmdlist.pop_back();
+            }
+        }
 		void flexencode_impl::beeps_output(string const &msgtext) {
             const char *msg = msgtext.c_str();
 			pmt::pmt_t pdu = pmt::cons(pmt::make_dict(), pmt::init_u8vector(strlen(msg), (const uint8_t *)msg));
@@ -699,14 +714,14 @@ namespace gr {
                 unsigned long freq = strtoul(freqhz.c_str(), 0, 10);
                 if((freq == ULONG_MAX || freq == 0) && errno != 0) {
                     std::cerr << "WARNING beeps message: invalid freq: " << freqhz << std::endl;
-                    beeps_output(cmdid + " ERROR");
+                    beeps_output(cmdid + " ERROR\n");
                     return;
                 }
                 vector<string> capcodes;
                 boost::split(capcodes, capcodestr, boost::is_any_of(","), boost::token_compress_on);
                 if(capcodes.size() < 1 || tokens[0].length() < 1) {
                     std::cerr << "WARNING beeps message: got bad capcode str: " << capcodestr << std::endl;
-                    beeps_output(cmdid + " ERROR");
+                    beeps_output(cmdid + " ERROR\n");
                     return;
                 }
                 vector<uint32_t> codes;
@@ -715,7 +730,7 @@ namespace gr {
                     unsigned long code = strtoul((*it).c_str(), 0, 10);
                     if(code > UINT32_MAX || ((code == ULONG_MAX || code == 0) && errno != 0)) {
                         std::cerr << "WARNING beeps message: invalid capcode str: " << capcodestr << std::endl;
-                        beeps_output(cmdid + " ERROR");
+                        beeps_output(cmdid + " ERROR\n");
                         return;
                     }
                     codes.push_back(code);
@@ -725,18 +740,20 @@ namespace gr {
                 if(msgtype.compare("alpha") == 0) {
                     string realmsg = hex_decode(message);
                     if(queue_flex_batch(Alpha, codes, realmsg.c_str()) == false) {
-                        beeps_output(cmdid + " ERROR");
+                        beeps_output(cmdid + " ERROR\n");
                         return;
                     }
+                    add_command_id(cmdid);
                 } else if(msgtype.compare("numeric") == 0) {
                     string realmsg = hex_decode(message);
                     if(queue_flex_batch(Numeric, codes, realmsg.c_str()) == false) {
-                        beeps_output(cmdid + " ERROR");
+                        beeps_output(cmdid + " ERROR\n");
                         return;
                     }
+                    add_command_id(cmdid);
                 } else {
                     std::cerr << "WARNING beeps message: invalid type: " << msgtype << std::endl;
-                    beeps_output(cmdid + " ERROR");
+                    beeps_output(cmdid + " ERROR\n");
                     return;
                 }
             }
@@ -773,6 +790,7 @@ namespace gr {
             boost::mutex::scoped_lock lock(bitqueue_mutex);
 
             if(d_bitqueue.empty()) {
+                clear_cmdid_queue();
                 return 0;
             }
             const int toxfer = noutput_items < d_bitqueue.size() ? noutput_items : d_bitqueue.size();
