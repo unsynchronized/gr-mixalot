@@ -119,6 +119,41 @@ namespace gr {
             std::cout << "XXX: " << u32tostring(reverse_bits32(encoded)) << std::endl;
             return encoded;
         }
+        /**
+         * Make an encoded BIW 001 with the given parameters.
+         * 
+         * Returns a reversed 32-bit word (LSB of ret val is the parity bit).
+         */
+        uint32_t
+        make_biwymd(uint32_t year, uint32_t month, uint32_t day) {
+            uint32_t dw = 0;
+            const uint32_t f = 1;
+            dw |= (f & 0x7) << 4;
+            dw |= (year & 0x1f) << 7;
+            dw |= (day & 0x1f) << 12;
+            dw |= (year & 0xf) << 17;
+            add_flex_checksum(dw);
+            uint32_t encoded = encodeword(reverse_bits32(dw));
+            return encoded;
+        }
+
+        /**
+         * Make an encoded BIW 001 with the given parameters.
+         * 
+         * Returns a reversed 32-bit word (LSB of ret val is the parity bit).
+         */
+        uint32_t 
+        make_biwhms(uint32_t hour, uint32_t minute, uint32_t second) {
+            uint32_t dw = 0;
+            const uint32_t f = 2;
+            dw |= (f & 0x7) << 4;
+            dw |= (hour & 0x1f) << 7;
+            dw |= (minute & 0x3f) << 12;
+            dw |= (second & 0x7) << 18;
+            add_flex_checksum(dw);
+            uint32_t encoded = encodeword(reverse_bits32(dw));
+            return encoded;
+        }
 
         /**
          * Make a short-address word.
@@ -241,6 +276,8 @@ namespace gr {
 
                 vector<uint32_t> allwords;
                 allwords.push_back(make_biw1(0, 0, 1+addrwords.size(), 0, 0));
+                //allwords.push_back(make_biwymd(25, 5, 29));
+                //allwords.push_back(make_biwhms(13, 37, 0));
                 allwords.insert(allwords.end(), addrwords.begin(), addrwords.end());
 
                 uint32_t new_msg_checksum;
