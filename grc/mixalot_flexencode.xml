@@ -60,4 +60,11 @@
         <optional>1</optional>
     </source>
 
+    <source>
+        <name>cmds_out</name>
+        <type>message</type>
+        <optional>1</optional>
+    </source>
+
+
 </block>

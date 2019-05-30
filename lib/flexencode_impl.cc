@@ -226,6 +226,8 @@ namespace gr {
 
         bool
         flexencode_impl::queue_flex_batch(const msgtype_t msgtype, const vector<uint32_t> &codes, const char *msgbody) {
+            d_baudrate = 1600;
+
             static const shared_ptr<bvec> bit_sync_1 = get_vec("10101010101010101010101010101010");
             static const shared_ptr<bvec> bs =         get_vec("1010101010101010");
             static const shared_ptr<bvec> bs_inv =     get_vec("0101010101010101");
@@ -558,20 +560,20 @@ namespace gr {
         }
 
 
-        // XXX: REMOVE
 #define POCSAG_SYNCWORD 0x7CD215D8
 #define POCSAG_IDLEWORD 0x7A89C197
         void 
-        flexencode_impl::queue_batch() {
+        flexencode_impl::queue_pocsag_batch(msgtype_t msgtype, unsigned int baudrate, unsigned int capcode, std::string message) {
+            d_baudrate = baudrate;
             std::vector<uint32_t> msgwords;
             uint32_t functionbits = 0;
-            switch(d_msgtype) {
+            switch(msgtype) {
                 case Numeric:
-                    make_numeric_message(d_message, msgwords);
+                    make_numeric_message(message, msgwords);
                     functionbits = 0;
                     break;
                 case Alpha:
-                    make_alpha_message(d_message, msgwords);
+                    make_alpha_message(message, msgwords);
                     functionbits = 3;
                     break;
                 default:
@@ -580,46 +582,62 @@ namespace gr {
             msgwords.push_back(POCSAG_IDLEWORD);
 
             static const shared_ptr<bvec> preamble = get_vec("101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010");
-            const uint32_t addrtemp = (d_capcode >> 3) << 13 | ((functionbits & 3) << 11);
+            const uint32_t addrtemp = (capcode >> 3) << 13 | ((functionbits & 3) << 11);
             const uint32_t addrword = encodeword(addrtemp);
-            const uint32_t frameoffset = d_capcode & 7;
+            const uint32_t frameoffset = capcode & 7;
 
             assert((addrword & 0xFFFFF800) == addrtemp);
 
-            queue(preamble);
-            queue(POCSAG_SYNCWORD);
+            queue_pocsag(preamble);
+            queue_pocsag(POCSAG_SYNCWORD);
             
             for(int i = 0; i < frameoffset; i++) {
-                queue(POCSAG_IDLEWORD);
-                queue(POCSAG_IDLEWORD);
+                queue_pocsag(POCSAG_IDLEWORD);
+                queue_pocsag(POCSAG_IDLEWORD);
             }
-            queue(addrword);
+            queue_pocsag(addrword);
             std::vector<uint32_t>::iterator it = msgwords.begin();
 
             for(int i = (frameoffset * 2)+1; i < 16; i++) {
                 if(it != msgwords.end()) {
-                    queue(*it);
+                    queue_pocsag(*it);
                     it++;
                 } else {
-                    queue(POCSAG_IDLEWORD);
+                    queue_pocsag(POCSAG_IDLEWORD);
                 }
             }
             while(it != msgwords.end()) {
-                queue(POCSAG_SYNCWORD);
+                queue_pocsag(POCSAG_SYNCWORD);
                 for(int i = 0; i < 16; i++) {
                     if(it != msgwords.end()) {
-                        queue(*it);
+                        queue_pocsag(*it);
                         it++;
                     } else {
-                        queue(POCSAG_IDLEWORD);
+                        queue_pocsag(POCSAG_IDLEWORD);
                     }
                 }
             }
         }
+
+
         void 
         flexencode_impl::queue(uint8_t *arr, size_t sz) {
             for(size_t i = 0; i < sz; i++) {
                 queuebit(arr[i] == 0 ? 0 : 1);
+            }
+        }
+
+        void 
+        flexencode_impl::queue_pocsag(shared_ptr<bvec> bvptr) {
+            for(unsigned int i = 0; i < bvptr->size(); i++) {
+                queuebit((*bvptr)[i] ? 0 : 1);
+            }
+        }
+        void 
+        flexencode_impl::queue_pocsag(uint32_t val) {
+            for(int i = 0; i < 32; i++) {
+                queuebit(((val & 0x80000000) == 0x80000000) ? 0 : 1);
+                val = val << 1;
             }
         }
 
@@ -640,7 +658,7 @@ namespace gr {
 
 
         flexencode_impl::flexencode_impl()
-          : d_baudrate(1600), d_capcode(425321), d_msgtype(Alpha), d_message("hello"), d_symrate(64000), 
+          : d_baudrate(1600), d_symrate(38400), 
           sync_block("flexencode",
                   io_signature::make(0, 0, 0),
                   io_signature::make(1, 1, sizeof (unsigned char)))
@@ -652,6 +670,7 @@ namespace gr {
             //queue_flex_batch(Alpha, vector<uint32_t>(1, 1337331), "started");  // XXX
 
             message_port_register_out(pmt::mp("beeps_output"));
+            message_port_register_out(pmt::mp("cmds_out"));
             message_port_register_in(pmt::mp("beeps"));
             set_msg_handler(pmt::mp("beeps"),
                 boost::bind(&flexencode_impl::beeps_message, this, _1)
@@ -678,6 +697,14 @@ namespace gr {
 			message_port_pub(pmt::mp("beeps_output"), pdu);
 
 		}
+        void
+        flexencode_impl::tune_target(double freqhz) {
+            pmt::pmt_t command = pmt::cons( // Make a pair
+                pmt::mp("freq"), // Key is 'freq' => sets the frequency
+                pmt::mp(freqhz) // Set the frequency to 1.1 GHz
+            );
+			message_port_pub(pmt::mp("cmds_out"), command);
+        }
 
 		void
         flexencode_impl::beeps_message(pmt::pmt_t msg) {
@@ -703,6 +730,7 @@ namespace gr {
             }
             // flex 0 931337500 alpha 1337331 41424344
             // flex 1 931337500 numeric 1337331 3133731337A
+            // pocsag512 0 158700000 alpha 425321 41424344
             if(tokens[0].compare("flex") == 0 && tokens.size() >= 6) {
                 string cmdid = tokens[1];
                 string freqhz = tokens[2];
@@ -717,6 +745,7 @@ namespace gr {
                     beeps_output(cmdid + " ERROR\n");
                     return;
                 }
+                tune_target(freq);
                 vector<string> capcodes;
                 boost::split(capcodes, capcodestr, boost::is_any_of(","), boost::token_compress_on);
                 if(capcodes.size() < 1 || tokens[0].length() < 1) {
@@ -756,6 +785,59 @@ namespace gr {
                     beeps_output(cmdid + " ERROR\n");
                     return;
                 }
+            } else if(
+                    (tokens[0].compare("pocsag512") == 0
+                     || tokens[0].compare("pocsag1200") == 0
+                     || tokens[0].compare("pocsag2400") == 0)
+                    && tokens.size() >= 6) {
+                string cmdid = tokens[1];
+                string freqhz = tokens[2];
+                string msgtype = tokens[3];
+                string capcodestr = tokens[4];
+                string message = tokens[5];
+                errno = 0;
+                unsigned long freq = strtoul(freqhz.c_str(), 0, 10);
+                if((freq == ULONG_MAX || freq == 0) && errno != 0) {
+                    std::cerr << "WARNING beeps message: invalid freq: " << freqhz << std::endl;
+                    beeps_output(cmdid + " ERROR\n");
+                    return;
+                }
+                tune_target(freq);
+
+                errno = 0;
+                unsigned long capcode = strtoul(capcodestr.c_str(), 0, 10);
+                if(capcode > UINT32_MAX) {
+                    std::cerr << "WARNING beeps message: invalid capcode str: " << capcodestr << std::endl;
+                    beeps_output(cmdid + " ERROR\n");
+                    return;
+                }
+                msgtype_t msgt;
+                if(msgtype.compare("alpha") == 0) {
+                    msgt = Alpha;
+                } else if(msgtype.compare("numeric") == 0) {
+                    msgt = Numeric;
+                } else {
+                    std::cerr << "WARNING beeps message: invalid type: " << msgtype << std::endl;
+                    beeps_output(cmdid + " ERROR\n");
+                    return;
+                }
+                string realmsg = hex_decode(message);
+                unsigned int baudrate;
+                if(tokens[0].compare("pocsag512") == 0) {
+                    baudrate = 512;
+                } else if(tokens[0].compare("pocsag1200") == 0) {
+                    baudrate = 1200;
+                } else if(tokens[0].compare("pocsag2400") == 0) {
+                    baudrate = 2400;
+                } else {
+                    std::cerr << "WARNING beeps message: invalid baud rate: " << tokens[0] << std::endl;
+                    beeps_output(cmdid + " ERROR\n");
+                    return;
+                }
+
+                queue_pocsag_batch(msgt, 512, capcode, realmsg);
+                add_command_id(cmdid);
+                return;
             }
         }
 

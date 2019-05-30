@@ -26,11 +26,8 @@ namespace gr {
     private:
         std::queue<bool> d_bitqueue;   // Queue of symbols to be sent out.
         std::vector<string> d_cmdlist;     // List of command IDs to ack
-        msgtype_t d_msgtype;                // message type
         unsigned int d_baudrate;            // baud rate to transmit at
-        unsigned int d_capcode;             // capcode (pager ID)
         unsigned long d_symrate;            // output symbol rate (must be evenly divisible by the baud rate)
-        std::string d_message;              // message to send
 
         inline void queuebit(bool bit);
 
@@ -40,16 +37,19 @@ namespace gr {
 
         void clear_cmdid_queue();
         void add_command_id(std::string cmdid);
-        void queue_batch();
+        void queue_pocsag_batch(msgtype_t msgtype, unsigned int baudrate, unsigned int capcode, std::string message);
         bool queue_flex_batch(const msgtype_t msgtype, const vector<uint32_t> &codes, const char *msgbody);
         boost::mutex bitqueue_mutex;
         boost::mutex cmdlist_mutex;
 
+        void tune_target(double freqhz);
         bool make_standard_numeric_msg(unsigned int nwords, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords, uint32_t &checksum);
         bool make_alphanumeric_msg(unsigned int num_address_words, unsigned int message_start, const string msg, vector<uint32_t> &vecwords, vector<uint32_t> &msgwords);
         void beeps_message(pmt::pmt_t msg);
 		void beeps_output(string const &msgtext);
 
+        void queue_pocsag(shared_ptr<bvec> bvptr);
+        void queue_pocsag(uint32_t val);
         void queue(shared_ptr<bvec> bvptr);
         void queue(uint8_t *arr, size_t sz);
         void queue(uint32_t val);
