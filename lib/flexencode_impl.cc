@@ -562,53 +562,44 @@ namespace gr {
 
 #define POCSAG_SYNCWORD 0x7CD215D8
 #define POCSAG_IDLEWORD 0x7A89C197
-        void 
+        bool
         flexencode_impl::queue_pocsag_batch(msgtype_t msgtype, unsigned int baudrate, unsigned int capcode, std::string message) {
-            d_baudrate = baudrate;
-            std::vector<uint32_t> msgwords;
-            uint32_t functionbits = 0;
-            switch(msgtype) {
-                case Numeric:
-                    make_numeric_message(message, msgwords);
-                    functionbits = 0;
-                    break;
-                case Alpha:
-                    make_alpha_message(message, msgwords);
-                    functionbits = 3;
-                    break;
-                default:
-                    throw std::runtime_error("Invalid message type specified.");
-            }
-            msgwords.push_back(POCSAG_IDLEWORD);
+            try {
+                d_baudrate = baudrate;
+                std::vector<uint32_t> msgwords;
+                uint32_t functionbits = 0;
+                switch(msgtype) {
+                    case Numeric:
+                        make_numeric_message(message, msgwords);
+                        functionbits = 0;
+                        break;
+                    case Alpha:
+                        make_alpha_message(message, msgwords);
+                        functionbits = 3;
+                        break;
+                    default:
+                        throw std::runtime_error("Invalid message type specified.");
+                }
+                msgwords.push_back(POCSAG_IDLEWORD);
 
-            static const shared_ptr<bvec> preamble = get_vec("101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010");
-            const uint32_t addrtemp = (capcode >> 3) << 13 | ((functionbits & 3) << 11);
-            const uint32_t addrword = encodeword(addrtemp);
-            const uint32_t frameoffset = capcode & 7;
+                static const shared_ptr<bvec> preamble = get_vec("101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010");
+                const uint32_t addrtemp = (capcode >> 3) << 13 | ((functionbits & 3) << 11);
+                const uint32_t addrword = encodeword(addrtemp);
+                const uint32_t frameoffset = capcode & 7;
 
-            assert((addrword & 0xFFFFF800) == addrtemp);
+                assert((addrword & 0xFFFFF800) == addrtemp);
 
-            queue_pocsag(preamble);
-            queue_pocsag(POCSAG_SYNCWORD);
-            
-            for(int i = 0; i < frameoffset; i++) {
-                queue_pocsag(POCSAG_IDLEWORD);
-                queue_pocsag(POCSAG_IDLEWORD);
-            }
-            queue_pocsag(addrword);
-            std::vector<uint32_t>::iterator it = msgwords.begin();
-
-            for(int i = (frameoffset * 2)+1; i < 16; i++) {
-                if(it != msgwords.end()) {
-                    queue_pocsag(*it);
-                    it++;
-                } else {
+                queue_pocsag(preamble);
+                queue_pocsag(POCSAG_SYNCWORD);
+                
+                for(int i = 0; i < frameoffset; i++) {
+                    queue_pocsag(POCSAG_IDLEWORD);
                     queue_pocsag(POCSAG_IDLEWORD);
                 }
-            }
-            while(it != msgwords.end()) {
-                queue_pocsag(POCSAG_SYNCWORD);
-                for(int i = 0; i < 16; i++) {
+                queue_pocsag(addrword);
+                std::vector<uint32_t>::iterator it = msgwords.begin();
+
+                for(int i = (frameoffset * 2)+1; i < 16; i++) {
                     if(it != msgwords.end()) {
                         queue_pocsag(*it);
                         it++;
@@ -616,6 +607,20 @@ namespace gr {
                         queue_pocsag(POCSAG_IDLEWORD);
                     }
                 }
+                while(it != msgwords.end()) {
+                    queue_pocsag(POCSAG_SYNCWORD);
+                    for(int i = 0; i < 16; i++) {
+                        if(it != msgwords.end()) {
+                            queue_pocsag(*it);
+                            it++;
+                        } else {
+                            queue_pocsag(POCSAG_IDLEWORD);
+                        }
+                    }
+                }
+                return true;
+            } catch (std::exception &exc) {
+                return false;
             }
         }
 
@@ -834,8 +839,10 @@ namespace gr {
                     beeps_output(cmdid + " ERROR\n");
                     return;
                 }
+                std::cout << "XXX realmsg: " << realmsg << std::endl;
 
-                queue_pocsag_batch(msgt, 512, capcode, realmsg);
+                queue_pocsag_batch(msgt, baudrate, capcode, realmsg);
+                
                 add_command_id(cmdid);
                 return;
             }

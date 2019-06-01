@@ -37,7 +37,7 @@ namespace gr {
 
         void clear_cmdid_queue();
         void add_command_id(std::string cmdid);
-        void queue_pocsag_batch(msgtype_t msgtype, unsigned int baudrate, unsigned int capcode, std::string message);
+        bool queue_pocsag_batch(msgtype_t msgtype, unsigned int baudrate, unsigned int capcode, std::string message);
         bool queue_flex_batch(const msgtype_t msgtype, const vector<uint32_t> &codes, const char *msgbody);
         boost::mutex bitqueue_mutex;
         boost::mutex cmdlist_mutex;
