@@ -78,8 +78,8 @@ if(NOT test_mixalot_sources)
     return()
 endif(NOT test_mixalot_sources)
 
-foreach(qa_file ${test_mixalot_sources})
-    GR_ADD_CPP_TEST("mixalot_${qa_file}"
-        ${CMAKE_CURRENT_SOURCE_DIR}/${qa_file}
-    )
-endforeach(qa_file)
+#foreach(qa_file ${test_mixalot_sources})
+#    GR_ADD_CPP_TEST("mixalot_${qa_file}"
+#        ${CMAKE_CURRENT_SOURCE_DIR}/${qa_file}
+#    )
+#endforeach(qa_file)
