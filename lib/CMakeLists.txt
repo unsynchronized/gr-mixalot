@@ -23,7 +23,14 @@
 ########################################################################
 include(GrPlatform) #define LIB_SUFFIX
 
+include_directories(
+    ${GR_INCLUDES}
+    ${Boost_INCLUDE_DIR}
+    ${ITPP_INCLUDE_DIR}
+)
+link_directories(${Boost_LIBRARY_DIRS} ${GR_LIBDIRS})
 list(APPEND mixalot_sources
+    utils.cc
     pocencode_impl.cc
 )
 

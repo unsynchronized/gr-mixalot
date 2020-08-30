@@ -24,12 +24,26 @@ description here (python/__init__.py).
 '''
 from __future__ import unicode_literals
 
-# import swig generated symbols into the mixalot namespace
+# ----------------------------------------------------------------
+# Temporary workaround for ticket:181 (swig+python problem)
+import sys
+_RTLD_GLOBAL = 0
 try:
-    # this might fail if the module is python-only
-    from .mixalot_swig import *
+    from dl import RTLD_GLOBAL as _RTLD_GLOBAL
 except ImportError:
-    pass
+    try:
+        from DLFCN import RTLD_GLOBAL as _RTLD_GLOBAL
+    except ImportError:
+        pass
+
+if _RTLD_GLOBAL != 0:
+    _dlopenflags = sys.getdlopenflags()
+    sys.setdlopenflags(_dlopenflags|_RTLD_GLOBAL)
+# ----------------------------------------------------------------
+
+
+# import swig generated symbols into the mixalot namespace
+from .mixalot_swig import *
 
 # import any pure python here
 #
