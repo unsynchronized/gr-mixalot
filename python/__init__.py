@@ -47,3 +47,9 @@ from .mixalot_swig import *
 
 # import any pure python here
 #
+
+# ----------------------------------------------------------------
+# Tail of workaround
+if _RTLD_GLOBAL != 0:
+    sys.setdlopenflags(_dlopenflags)      # Restore original flags
+# ----------------------------------------------------------------
