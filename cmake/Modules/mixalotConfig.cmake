@@ -22,9 +22,10 @@ FIND_LIBRARY(
           /usr/local/lib64
           /usr/lib
           /usr/lib64
-)
+          )
+
+include("${CMAKE_CURRENT_LIST_DIR}/mixalotTarget.cmake")
 
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(MIXALOT DEFAULT_MSG MIXALOT_LIBRARIES MIXALOT_INCLUDE_DIRS)
 MARK_AS_ADVANCED(MIXALOT_LIBRARIES MIXALOT_INCLUDE_DIRS)
-

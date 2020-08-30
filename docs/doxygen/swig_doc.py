@@ -27,6 +27,7 @@ The file instructs SWIG to transfer the doxygen comments into the
 python docstrings.
 
 """
+from __future__ import unicode_literals
 
 import sys, time
 
@@ -80,13 +81,15 @@ class Block2(object):
 
 def utoascii(text):
     """
-    Convert unicode text into ascii and escape quotes.
+    Convert unicode text into ascii and escape quotes and backslashes.
     """
     if text is None:
         return ''
     out = text.encode('ascii', 'replace')
-    out = out.replace('"', '\\"')
-    return out
+    # swig will require us to replace blackslash with 4 backslashes
+    out = out.replace(b'\\', b'\\\\\\\\')
+    out = out.replace(b'"', b'\\"').decode('ascii')
+    return str(out)
 
 
 def combine_descriptions(obj):
@@ -136,7 +139,7 @@ def make_entry(obj, name=None, templ="{description}", description=None, params=[
     return entry_templ.format(
         name=name,
         docstring=docstring,
-    )
+        )
 
 
 def make_func_entry(func, name=None, description=None, params=None):
@@ -227,12 +230,12 @@ def make_block2_entry(di, block):
     # the make function.
     output = []
     output.append(make_class_entry(
-        block, description=description,
-        ignored_methods=['make'], params=make_func.params))
+            block, description=description,
+            ignored_methods=['make'], params=make_func.params))
     makename = block.name() + '::make'
     output.append(make_func_entry(
-        make_func, name=makename, description=description,
-        params=make_func.params))
+            make_func, name=makename, description=description,
+            params=make_func.params))
     return "\n\n".join(output)
 
 def make_swig_interface_file(di, swigdocfilename, custom_output=None):
@@ -302,7 +305,7 @@ def make_swig_interface_file(di, swigdocfilename, custom_output=None):
 
     output = "\n\n".join(output)
 
-    swig_doc = file(swigdocfilename, 'w')
+    swig_doc = open(swigdocfilename, 'w')
     swig_doc.write(output)
     swig_doc.close()
 
@@ -310,7 +313,7 @@ if __name__ == "__main__":
     # Parse command line options and set up doxyxml.
     err_msg = "Execute using: python swig_doc.py xml_path outputfilename"
     if len(sys.argv) != 3:
-        raise StandardError(err_msg)
+        raise Exception(err_msg)
     xml_path = sys.argv[1]
     swigdocfilename = sys.argv[2]
     di = DoxyIndex(xml_path)

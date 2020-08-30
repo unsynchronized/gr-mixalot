@@ -13,14 +13,26 @@
 namespace gr {
   namespace mixalot {
 
-
-    class MIXALOT_API pocencode : virtual public sync_block
+    /*!
+     * \brief <+description of block+>
+     * \ingroup mixalot
+     *
+     */
+    class MIXALOT_API pocencode : virtual public gr::sync_block
     {
     public:
        typedef boost::shared_ptr<pocencode> sptr;
        typedef enum { Numeric = 0, Alpha = 1 } msgtype_t;
 
-       static sptr make(msgtype_t type=Numeric, unsigned int baudrate = 1200, unsigned int capcode = 0, std::string message="", unsigned long symrate = 38400);
+      /*!
+       * \brief Return a shared_ptr to a new instance of mixalot::pocencode.
+       *
+       * To avoid accidental use of raw pointers, mixalot::pocencode's
+       * constructor is in a private implementation
+       * class. mixalot::pocencode::make is the public interface for
+       * creating new instances.
+       */
+      static sptr make(type=Numeric, unsigned int baudrate = 1200, unsigned int capcode = 0, std::string message="", unsigned long symrate = 38400);
     };
 
   } // namespace mixalot

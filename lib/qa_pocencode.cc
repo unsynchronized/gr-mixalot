@@ -18,20 +18,21 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include <gnuradio/attributes.h>
-#include <cppunit/TestAssert.h>
-#include "qa_pocencode.h"
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <mixalot/pocencode.h>
+#include <gnuradio/attributes.h>
+#include <boost/test/unit_test.hpp>
 
 namespace gr {
   namespace mixalot {
 
-    void
-    qa_pocencode::t1()
+    BOOST_AUTO_TEST_CASE(test_pocencode_t1)
     {
       // Put test here
     }
 
   } /* namespace mixalot */
 } /* namespace gr */
-
