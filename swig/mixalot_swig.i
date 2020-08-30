@@ -14,4 +14,3 @@
 
 %include "mixalot/pocencode.h"
 GR_SWIG_BLOCK_MAGIC2(mixalot, pocencode);
-

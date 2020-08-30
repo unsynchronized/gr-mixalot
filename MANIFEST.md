@@ -1,23 +1,17 @@
-title: gr-mixalot
-brief: Blocks/utilities to encode pager messages
-tags:
-  - pager
-  - POCSAG
-  - Motorola
-  - Bravo
-  - Advisor
-  - ATI Wireless
-  - CCP-6000
-
-author: 
-  - Brandon Creighton
-
-copyright_owner: 
-  - Brandon Creighton
-  
-repo: https://github.com/unsynchronized/gr-mixalot
-website: https://github.com/unsynchronized/gr-mixalot
---- 
-gr-mixalot is intended to be a set of GNU Radio blocks/utilities to encode pager messages. Currently it only supports POCSAG numeric and alphanumeric pages. It's also intended to be a fairly clear, short example of basic transmission with GNU Radio.
-
-The POCSAG encoder has been tested against many variants of the Motorola Bravo and Advisor series, as well as the ATI Wireless CCP-6000. Please get in touch if you find a device that doesn't work properly.
+title: The MIXALOT OOT Module
+brief: Short description of gr-mixalot
+tags: # Tags are arbitrary, but look at CGRAN what other authors are using
+  - sdr
+author:
+  - Author Name <authors@email.address>
+copyright_owner:
+  - Copyright Owner 1
+license:
+gr_supported_version: # Put a comma separated list of supported GR versions here
+#repo: # Put the URL of the repository here, or leave blank for default
+#website: <module_website> # If you have a separate project website, put it here
+#icon: <icon_url> # Put a URL to a square image here that will be used as an icon on CGRAN
+---
+A longer, multi-line description of gr-mixalot.
+You may use some *basic* Markdown here.
+If left empty, it will try to find a README file instead.
