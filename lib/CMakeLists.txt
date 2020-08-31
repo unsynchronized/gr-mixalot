@@ -45,6 +45,7 @@ target_link_libraries(gnuradio-mixalot gnuradio::gnuradio-runtime)
 target_include_directories(gnuradio-mixalot
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
     PUBLIC $<INSTALL_INTERFACE:include>
+    ${ITPP_LIBRARY}
   )
 set_target_properties(gnuradio-mixalot PROPERTIES DEFINE_SYMBOL "gnuradio_mixalot_EXPORTS")
 
