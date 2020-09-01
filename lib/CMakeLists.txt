@@ -42,6 +42,7 @@ endif(NOT mixalot_sources)
 
 add_library(gnuradio-mixalot SHARED ${mixalot_sources})
 target_link_libraries(gnuradio-mixalot gnuradio::gnuradio-runtime)
+target_link_libraries(gnuradio-mixalot ${Boost_LIBRARIES} ${GR_LIBS} ${ITPP_LIBRARY})
 target_include_directories(gnuradio-mixalot
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
     PUBLIC $<INSTALL_INTERFACE:include>
