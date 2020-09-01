@@ -58,7 +58,7 @@ GR_SWIG_INSTALL(TARGETS mixalot_swig DESTINATION ${GR_PYTHON_DIR}/mixalot)
 
 if(UNIX)
     SET( swig_lib _mixalot_swig.lnk )
-    SET( swig_lib_target ${CMAKE_INSTALL_PREFIX}/${GR_PYTHON_DIR}/mixalot/_mixalot_swig.so )
+    SET( swig_lib_target ${GR_PYTHON_DIR}/mixalot/_mixalot_swig.so )
     ADD_CUSTOM_COMMAND( OUTPUT ${swig_lib}
                         COMMAND ln -sf ${swig_lib_target} ${swig_lib}
                         COMMENT "Generating system symlink for mixalot"
