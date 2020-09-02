@@ -18,7 +18,7 @@ using boost::shared_ptr;
 
 namespace gr {
   namespace mixalot {
-      
+
     class pocencode_impl : public pocencode
     {
     private:
@@ -49,4 +49,3 @@ namespace gr {
 } // namespace gr
 
 #endif /* INCLUDED_MIXALOT_POCENCODE_IMPL_H */
-
