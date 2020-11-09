@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from gnuradio import gr, gr_unittest, pager, gru
 import mixalot_swig as mixalot
@@ -14,7 +14,7 @@ def get_options():
     parser.add_option("-v", "--verbose", action="store_true", default=False)
     (options, args) = parser.parse_args()
     if len(args) > 0:
-        print "Run 'usrp_flex.py -h' for options."
+        print("Run 'usrp_flex.py -h' for options.")
         sys.exit(1)
     return (options, args)
 
