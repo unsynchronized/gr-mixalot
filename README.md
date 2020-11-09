@@ -14,9 +14,9 @@ if you find a device that doesn't work properly.
 Building
 ========
 
-Like many other out-of-tree modules, gr-mixalot uses cmake.  The only 
-dependencies should be a recent version of GNU Radio (3.6.x or 3.7.0 git should 
-work) and the ITPP library.  To use the HackRF sink, you'll also need gr-osmosdr 
+Like many other out-of-tree modules, gr-mixalot uses cmake.  This branch is targeted 
+toward GNU Radio 3.8.x+ -- previous branches should run on 3.6-3.7.  The IT++/ITPP
+library is also a dependency.  To use the HackRF sink, you'll also need gr-osmosdr 
 installed.
 
 To build, create a new directory and run:
