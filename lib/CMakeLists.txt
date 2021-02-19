@@ -32,6 +32,7 @@ link_directories(${Boost_LIBRARY_DIRS} ${GR_LIBDIRS})
 list(APPEND mixalot_sources
     utils.cc
     pocencode_impl.cc
+    flexencode_impl.cc
 )
 
 set(mixalot_sources "${mixalot_sources}" PARENT_SCOPE)

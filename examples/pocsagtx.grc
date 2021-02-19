@@ -128,7 +128,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [405, 117]
+    coordinate: [504, 284.0]
     rotation: 0
     state: enabled
 - name: capcode
@@ -145,7 +145,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [200, 68]
+    coordinate: [248, 100.0]
     rotation: 0
     state: enabled
 - name: import_0
@@ -169,13 +169,13 @@ blocks:
     hide: none
     label: ''
     short_id: ''
-    type: ''
-    value: '31337'
+    type: str
+    value: GRAND CENTRAL\x0a\x0aHACK THE PLANET
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [880, 4]
+    coordinate: [248, 172.0]
     rotation: 0
     state: enabled
 - name: mixalot_pocencode_0
@@ -188,9 +188,9 @@ blocks:
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    msg: '31337'
+    msg: message
     symrate: symrate
-    type: '0'
+    type: '1'
   states:
     bus_sink: false
     bus_source: false
@@ -216,7 +216,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [598, 101]
+    coordinate: [624, 148.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -492,7 +492,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [881, 314]
+    coordinate: [840, 300.0]
     rotation: 0
     state: enabled
 
