@@ -14,15 +14,18 @@ Frequency Band:
 * A03 - VHF
 * A04 - UHF
 * A05 - 900 Mhz
+* A06 - 900 Mhz 2-way (ReFLEX)
 
 Model:
 * AU - Digitz
 * AW - Inflo
+* BE - Jazz
 * BP - Bravo Plus
 * CJ - Keynote
 * CM - Advisor Elite
 * DP - OPTRX
 * EJ - Advisor Pro
+* FV - CP1250
 * GV - Bravo Classic
 * HJ - Renegade
 * HN - Ultra Express
@@ -32,6 +35,7 @@ Model:
 * MV - Bravo LX/FLX
 * NK - Bravo Express
 * PH - Memo Express
+* PK - Talkabout T-900 
 * QA - Bravo
 * QT - Confidant
 * QW - Advisor Gold
