@@ -154,12 +154,13 @@ namespace gr {
 
         void
         gscencode_impl::queue_message() {
+            unsigned int finallen = d_message.length();
+            if((finallen % 8) != 0) {
+                finallen += (8-(finallen % 8));
+            }
+            unsigned char chars[finallen];
+
             if(d_msgtype == Alpha) {
-                unsigned int finallen = d_message.length();
-                if((finallen % 8) != 0) {
-                    finallen += (8-(finallen % 8));
-                }
-                unsigned char chars[finallen];
                 memset(chars, 0x3e, finallen);
 
                 // Based off of Table VII, Rep. 900-2, Annex I
@@ -180,23 +181,79 @@ namespace gr {
                     }
                     chars[i] = c;
                 }
-                assert((finallen % 8) == 0);
-
-                for(int i = 0; i < finallen; i += 8) {
-                    bool continuebit;
-                    if((i+8) == finallen) {
-                        continuebit = false;
-                    } else {
-                        continuebit = true;
-                    }
-                    queue_data_block(&chars[i], continuebit);
-                }
-
             } else if(d_msgtype == Numeric) {
-                // XXX XXX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                std::cout << "WARNING: GSC Numeric mode is untested!" << std::endl;
+                memset(chars, 0xa, finallen);
+                for(int i = 0; i < d_message.length(); i++) {
+                    unsigned char c = (unsigned char)d_message[i];
+                    unsigned char v = 0;
+                    switch(c) {
+                        case '0':
+                            v = 0;
+                            break;
+                        case '1':
+                            v = 1;
+                            break;
+                        case '2':
+                            v = 2;
+                            break;
+                        case '3':
+                            v = 3;
+                            break;
+                        case '4':
+                            v = 4;
+                            break;
+                        case '5':
+                            v = 5;
+                            break;
+                        case '6':
+                            v = 6;
+                            break;
+                        case '7':
+                            v = 7;
+                            break;
+                        case '8':
+                            v = 8;
+                            break;
+                        case '9':
+                            v = 9;
+                            break;
+                        case 'U':
+                            v = 11;
+                            break;
+                        case ' ':
+                            v = 12;
+                            break;
+                        case '-':
+                            v = 13;
+                            break;
+                        case '=':
+                            v = 14;
+                            break;
+                        case 'E':
+                            v = 15;
+                            break;
+                        default:
+                            throw std::invalid_argument("non-digit character included in numeric message");
+                            break;
+                    }
+                    chars[i] = v;
+                }
             } else {
                 throw std::runtime_error("Invalid message type specified.");
             }
+            assert((finallen % 8) == 0);
+
+            for(int i = 0; i < finallen; i += 8) {
+                bool continuebit;
+                if((i+8) == finallen) {
+                    continuebit = false;
+                } else {
+                    continuebit = true;
+                }
+                queue_data_block(&chars[i], continuebit);
+            }
+
         }
         void
         gscencode_impl::queue_data_block(unsigned char *blockmsg, bool continuebit) {
