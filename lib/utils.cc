@@ -253,6 +253,26 @@ namespace gr {
 
             return outmsg;
         }
+
+        void
+        uint32_to_bvec_rev(uint32_t d, bvec &bv, int nbits) {
+            assert(nbits >= 0 && nbits < 33);
+            bv.zeros();
+            for(int i = 0; i < nbits; i++) {
+                bv(i) = (d & 1);
+                d = (d >> 1);
+            }
+        }
+
+        /**
+         * Invert bvin, replacing bvout with an inverted version.
+         */
+        void
+        invert_bvec(const bvec &bvin, bvec &bvout) {
+            for(unsigned int i = 0; i < bvin.size(); i++) {
+                bvout(i) = bvin(i) == 0 ? 1 : 0;
+            }
+        }
     }
 }
 

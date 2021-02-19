@@ -23,6 +23,8 @@ namespace gr {
         uint32_t bvec_to_uint32(const bvec &bv);
         unsigned char even_parity(uint32_t x);
         std::string hex_decode(std::string const &message);
+        void uint32_to_bvec_rev(uint32_t d, bvec &bv, int nbits=32);
+        void invert_bvec(const bvec &bvin, bvec &bvout);
     }
 }
 
