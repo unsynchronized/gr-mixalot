@@ -22,6 +22,7 @@
 This is the GNU Radio MIXALOT module. Place your Python package
 description here (python/__init__.py).
 '''
+from __future__ import unicode_literals
 
 # ----------------------------------------------------------------
 # Temporary workaround for ticket:181 (swig+python problem)
@@ -31,9 +32,9 @@ try:
     from dl import RTLD_GLOBAL as _RTLD_GLOBAL
 except ImportError:
     try:
-	from DLFCN import RTLD_GLOBAL as _RTLD_GLOBAL
+        from DLFCN import RTLD_GLOBAL as _RTLD_GLOBAL
     except ImportError:
-	pass
+        pass
 
 if _RTLD_GLOBAL != 0:
     _dlopenflags = sys.getdlopenflags()
@@ -42,7 +43,7 @@ if _RTLD_GLOBAL != 0:
 
 
 # import swig generated symbols into the mixalot namespace
-from mixalot_swig import *
+from .mixalot_swig import *
 
 # import any pure python here
 #

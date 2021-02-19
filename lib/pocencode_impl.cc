@@ -23,8 +23,8 @@ using boost::shared_ptr;
 namespace gr {
     namespace mixalot {
 
-        // Reverses the bits in a byte and then shifts.  Useful for converting 
-        static inline uint8_t 
+        // Reverses the bits in a byte and then shifts.  Useful for converting
+        static inline uint8_t
         convchar(uint8_t b) {
             b = ((b & 0xf0) >> 4) | ((b & 0x0f) << 4);
             b = ((b & 0xcc) >> 2) | ((b & 0x33) << 2);
@@ -40,7 +40,7 @@ namespace gr {
 #define POCSAG_SYNCWORD 0x7CD215D8
         //#define POCSAG_IDLEWORD 0x7AC9C197
 #define POCSAG_IDLEWORD 0x7A89C197
-        void 
+        void
         pocencode_impl::queue_batch() {
             std::vector<uint32_t> msgwords;
             uint32_t functionbits = 0;
@@ -67,7 +67,7 @@ namespace gr {
 
             queue(preamble);
             queue(POCSAG_SYNCWORD);
-            
+
             for(int i = 0; i < frameoffset; i++) {
                 queue(POCSAG_IDLEWORD);
                 queue(POCSAG_IDLEWORD);
@@ -96,13 +96,13 @@ namespace gr {
             }
         }
 
-        void 
+        void
         pocencode_impl::queue(shared_ptr<bvec> bvptr) {
             for(unsigned int i = 0; i < bvptr->size(); i++) {
                 queuebit((*bvptr)[i]);
             }
         }
-        void 
+        void
         pocencode_impl::queue(uint32_t val) {
             for(int i = 0; i < 32; i++) {
                 queuebit(((val & 0x80000000) == 0x80000000) ? 1 : 0);
@@ -113,7 +113,7 @@ namespace gr {
 
 
         pocencode_impl::pocencode_impl(msgtype_t msgtype, unsigned int baudrate, unsigned int capcode, std::string message, unsigned long symrate)
-          : d_baudrate(baudrate), d_capcode(capcode), d_msgtype(msgtype), d_message(message), d_symrate(symrate), 
+          : d_baudrate(baudrate), d_capcode(capcode), d_msgtype(msgtype), d_message(message), d_symrate(symrate),
           sync_block("pocencode",
                   io_signature::make(0, 0, 0),
                   io_signature::make(1, 1, sizeof (unsigned char)))
@@ -127,7 +127,7 @@ namespace gr {
 
         // Insert bits into the queue.  Here is also where we repeat a single bit
         // so that we're emitting d_symrate symbols per second.
-        inline void 
+        inline void
         pocencode_impl::queuebit(bool bit) {
             const unsigned int interp = d_symrate / d_baudrate;
             for(unsigned int i = 0; i < interp; i++) {
@@ -139,8 +139,8 @@ namespace gr {
         {
         }
 
-        // Move data from our internal queue (d_bitqueue) out to gnuradio.  Here 
-        // we also convert our data from bits (0 and 1) to symbols (1 and -1).  
+        // Move data from our internal queue (d_bitqueue) out to gnuradio.  Here
+        // we also convert our data from bits (0 and 1) to symbols (1 and -1).
         //
         // These symbols are then used by the FM block to generate signals that are
         // +/- the max deviation.  (For POCSAG, that deviation is 4500 Hz.)  All of
@@ -150,7 +150,7 @@ namespace gr {
         pocencode_impl::work(int noutput_items,
                   gr_vector_const_void_star &input_items,
                   gr_vector_void_star &output_items) {
-            const float *in = (const float *) input_items[0];
+            //const float *in = (const float *) input_items[0];
             unsigned char *out = (unsigned char *) output_items[0];
 
             if(d_bitqueue.empty()) {
@@ -179,4 +179,3 @@ namespace gr {
         }
     } /* namespace mixalot */
 } /* namespace gr */
-
