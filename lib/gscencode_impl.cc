@@ -151,10 +151,56 @@ namespace gr {
             queue_dup(info2);
             queue_dup(parity2);
         }
+
         void
-        gscencode_impl::queue_message(bool continuebit) {
+        gscencode_impl::queue_message() {
+            if(d_msgtype == Alpha) {
+                unsigned int finallen = d_message.length();
+                if((finallen % 8) != 0) {
+                    finallen += (8-(finallen % 8));
+                }
+                unsigned char chars[finallen];
+                memset(chars, 0x3e, finallen);
+
+                // Based off of Table VII, Rep. 900-2, Annex I
+                for(int i = 0; i < d_message.length(); i++) {
+                    unsigned char c = (unsigned char)toupper(d_message[i]);
+                    if(c == 0x0a || c == 0x0d) {
+                        c = 0x3c;
+                    } else if(c == 0x7b) {
+                        c = 0x3b;
+                    } else if(c == 0x7e) {
+                        c = 0x3d;
+                    } else if(c == 0x5c) {
+                        c = 0x20;
+                    } else if(c < 0x20 || c > 0x5d) {
+                        c = 0x20;
+                    } else {
+                        c = c - 0x20;
+                    }
+                    chars[i] = c;
+                }
+                assert((finallen % 8) == 0);
+
+                for(int i = 0; i < finallen; i += 8) {
+                    bool continuebit;
+                    if((i+8) == finallen) {
+                        continuebit = false;
+                    } else {
+                        continuebit = true;
+                    }
+                    queue_data_block(&chars[i], continuebit);
+                }
+
+            } else if(d_msgtype == Numeric) {
+                // XXX XXX XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+            } else {
+                throw std::runtime_error("Invalid message type specified.");
+            }
+        }
+        void
+        gscencode_impl::queue_data_block(unsigned char *blockmsg, bool continuebit) {
             //unsigned char blockmsg[8] = { 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x3e };
-            unsigned char blockmsg[8] = { 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x20 };
             unsigned long infowords[8] = {
                 ((unsigned long)blockmsg[0] | ((unsigned long)blockmsg[1] << 6)) & 0x7f,
                 (((unsigned long)blockmsg[1] >> 1) | ((unsigned long)blockmsg[2] << 5)) & 0x7f,
@@ -254,10 +300,6 @@ namespace gr {
 
         void
         gscencode_impl::queue_batch() {
-            //unsigned int code = 881831;   // advisor -- NOT WORKING
-            //unsigned int code = 881499;     // group (advisor, bravo)
-            //unsigned int code = 881426;   // bravo
-            //unsigned int code = 881059;   // pmr2000
             unsigned int code = d_capcode;
             std::cout << "XXX capcode: " << code << std::endl;
             unsigned int word1, word2, preamble;
@@ -269,8 +311,7 @@ namespace gr {
             std::cout << "XXX queue_batch:    start: sz " << queuesize() << std::endl;
             queue_address(word1, word2);
             std::cout << "XXX queue_batch:  address: sz " << queuesize() << std::endl;
-            queue_message(true);
-            queue_message(false);
+            queue_message();
             std::cout << "XXX queue_batch:  message: sz " << queuesize() << std::endl;
             queue_comma(121 * 8, 1);
             std::cout << "XXX queue_batch:    TOTAL: sz " << queuesize() << std::endl;

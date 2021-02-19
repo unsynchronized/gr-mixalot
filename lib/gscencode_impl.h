@@ -37,7 +37,8 @@ namespace gr {
         void queue_dup(bvec &bv);
         void queue_dup_rev(bvec &bv);
         void queue_address(unsigned int word1, unsigned int word2);
-        void queue_message(bool continuebit);
+        void queue_message();
+        void queue_data_block(unsigned char *blockmsg, bool continuebit);
 
     public:
       gscencode_impl(msgtype_t msgtype, unsigned int capcode, std::string message, unsigned long symrate);
