@@ -5,12 +5,12 @@ options:
     cmake_opt: ''
     comment: ''
     copyright: ''
-    description: Example flowgraph for POCSAG transmitter
+    description: Example flowgraph for FLEX transmitter
     gen_cmake: 'On'
     gen_linking: dynamic
     generate_options: no_gui
     hier_block_src_path: '.:'
-    id: pocsagtx
+    id: flextest
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -36,7 +36,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '4500.0'
+    value: '4800.0'
   states:
     bus_sink: false
     bus_source: false
@@ -48,11 +48,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-<<<<<<< HEAD
-    value: '929637500'
-=======
-    value: '931862500'
->>>>>>> wasp-3.8
+    value: '931337500'
   states:
     bus_sink: false
     bus_source: false
@@ -117,6 +113,42 @@ blocks:
     coordinate: [91, 282]
     rotation: 0
     state: enabled
+- name: blocks_file_sink_0
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: /tmp/out.cf
+    type: complex
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [640, 268]
+    rotation: 0
+    state: disabled
+- name: blocks_file_sink_1
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: /tmp/out.syms
+    type: byte
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [464, 332]
+    rotation: 0
+    state: disabled
 - name: blocks_multiply_const_vxx_0
   id: blocks_multiply_const_vxx
   parameters:
@@ -132,32 +164,27 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-<<<<<<< HEAD
     coordinate: [405, 117]
-=======
-    coordinate: [504, 284.0]
->>>>>>> wasp-3.8
     rotation: 0
     state: enabled
-- name: capcode
-  id: parameter
+- name: blocks_socket_pdu_0
+  id: blocks_socket_pdu
   parameters:
+    affinity: ''
     alias: ''
     comment: ''
-    hide: none
-    label: ''
-    short_id: ''
-    type: intx
-    value: '1615132'
+    host: 127.0.0.1
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    mtu: '10000'
+    port: '31337'
+    tcp_no_delay: 'False'
+    type: TCP_SERVER
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-<<<<<<< HEAD
-    coordinate: [200, 68]
-=======
-    coordinate: [248, 100.0]
->>>>>>> wasp-3.8
+    coordinate: [56, 136]
     rotation: 0
     state: enabled
 - name: import_0
@@ -173,57 +200,19 @@ blocks:
     coordinate: [196, 11]
     rotation: 0
     state: enabled
-- name: message
-  id: parameter
-  parameters:
-    alias: ''
-    comment: ''
-    hide: none
-    label: ''
-    short_id: ''
-    type: str
-<<<<<<< HEAD
-    value: '"GRAND CENTRAL\x0a\x0aHACKRF THE PLANET"'
-=======
-    value: GRAND CENTRAL\x0a\x0aHACK THE PLANET
->>>>>>> wasp-3.8
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-<<<<<<< HEAD
-    coordinate: [880, 4]
-=======
-    coordinate: [248, 172.0]
->>>>>>> wasp-3.8
-    rotation: 0
-    state: enabled
-- name: mixalot_pocencode_0
-  id: mixalot_pocencode
+- name: mixalot_flexencode_0
+  id: mixalot_flexencode
   parameters:
     affinity: ''
     alias: ''
-<<<<<<< HEAD
-    baudrate: '2400'
-=======
-    baudrate: '1200'
->>>>>>> wasp-3.8
-    capcode: capcode
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-<<<<<<< HEAD
-    msg: '31338'
-=======
-    msg: message
->>>>>>> wasp-3.8
-    symrate: symrate
-    type: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 137]
+    coordinate: [184, 176]
     rotation: 0
     state: enabled
 - name: pfb_arb_resampler_xxx_0
@@ -244,11 +233,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-<<<<<<< HEAD
     coordinate: [598, 101]
-=======
-    coordinate: [624, 148.0]
->>>>>>> wasp-3.8
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -256,7 +241,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    ant0: ''
+    ant0: TX/RX
     ant1: ''
     ant10: ''
     ant11: ''
@@ -364,7 +349,7 @@ blocks:
     comment: ''
     dev_addr: ''
     dev_args: '""'
-    gain0: '0'
+    gain0: '37'
     gain1: '0'
     gain10: '0'
     gain11: '0'
@@ -524,11 +509,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-<<<<<<< HEAD
     coordinate: [881, 314]
-=======
-    coordinate: [840, 300.0]
->>>>>>> wasp-3.8
     rotation: 0
     state: enabled
 
@@ -536,7 +517,12 @@ connections:
 - [analog_frequency_modulator_fc_0, '0', blocks_multiply_const_vxx_0, '0']
 - [blocks_char_to_float_0, '0', analog_frequency_modulator_fc_0, '0']
 - [blocks_multiply_const_vxx_0, '0', pfb_arb_resampler_xxx_0, '0']
-- [mixalot_pocencode_0, '0', blocks_char_to_float_0, '0']
+- [blocks_socket_pdu_0, pdus, mixalot_flexencode_0, beeps]
+- [mixalot_flexencode_0, '0', blocks_char_to_float_0, '0']
+- [mixalot_flexencode_0, '0', blocks_file_sink_1, '0']
+- [mixalot_flexencode_0, beeps_output, blocks_socket_pdu_0, pdus]
+- [mixalot_flexencode_0, cmds_out, uhd_usrp_sink_0, command]
+- [pfb_arb_resampler_xxx_0, '0', blocks_file_sink_0, '0']
 - [pfb_arb_resampler_xxx_0, '0', uhd_usrp_sink_0, '0']
 
 metadata:

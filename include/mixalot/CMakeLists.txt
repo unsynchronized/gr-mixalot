@@ -23,5 +23,5 @@
 ########################################################################
 install(FILES
     api.h
-    pocencode.h DESTINATION include/mixalot
+    gscencode.h pocencode.h flexencode.h DESTINATION include/mixalot
 )

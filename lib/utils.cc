@@ -44,6 +44,14 @@ namespace gr {
             shared_ptr<itpp::bvec> bp(new itpp::bvec(ss.str()));
             return bp;
         }
+        uint32_t
+        reverse_bits32(uint32_t x) {
+            x = (((x & 0xaaaaaaaa) >> 1) | ((x & 0x55555555) << 1));
+            x = (((x & 0xcccccccc) >> 2) | ((x & 0x33333333) << 2));
+            x = (((x & 0xf0f0f0f0) >> 4) | ((x & 0x0f0f0f0f) << 4));
+            x = (((x & 0xff00ff00) >> 8) | ((x & 0x00ff00ff) << 8));
+            return((x >> 16) | (x << 16));
+        }
 
         // Given a 21-bit dataword (stored in the upper 21 bits of dw), generate a parity-protected
         // BCH(31,21) codeword.  This is systematic encoding -- the data is left as a contiguous stream
@@ -204,6 +212,65 @@ namespace gr {
                 const uint32_t msgword = encodeword(msgtemp);
                 assert((msgword & 0xFFFFF800) == msgtemp);      // sanity
                 msgwords.push_back(msgword);
+            }
+        }
+        /**
+         * Decode from %02x-style hex string (41414141) to ASCII (AAAA).
+         * Lossy; this drops nulls and ignores invalid chars.
+         * No unicode here since we're in the 1990s
+         */
+        std::string 
+        hex_decode(std::string const &message) {
+            string outmsg = "";
+            size_t sz = message.length();
+            sz >>= 1;
+            sz <<= 1; // clear last bit
+            for(size_t i = 0; i < sz; i += 2) {
+                char outc = 0;
+                char msb = message[i];
+                if(msb >= '0' && msb <= '9') {
+                    outc |= ((msb-'0') & 0xf);
+                } else if(msb >= 'A' && msb <= 'F') {
+                    outc |= ((10+(msb-'A')) & 0xf);
+                } else if(msb >= 'a' && msb <= 'f') {
+                    outc |= ((10+(msb-'a')) & 0xf);
+                } else {
+                    continue;
+                }
+                outc <<= 4;
+                char lsb = message[i+1];
+                if(lsb >= '0' && lsb <= '9') {
+                    outc |= ((lsb-'0') & 0xf);
+                } else if(lsb >= 'A' && lsb <= 'F') {
+                    outc |= ((10+(lsb-'A')) & 0xf);
+                } else if(lsb >= 'a' && lsb <= 'f') {
+                    outc |= ((10+(lsb-'a')) & 0xf);
+                } else {
+                    continue;
+                }
+                outmsg = outmsg + outc;
+            }
+
+            return outmsg;
+        }
+
+        void
+        uint32_to_bvec_rev(uint32_t d, bvec &bv, int nbits) {
+            assert(nbits >= 0 && nbits < 33);
+            bv.zeros();
+            for(int i = 0; i < nbits; i++) {
+                bv(i) = (d & 1);
+                d = (d >> 1);
+            }
+        }
+
+        /**
+         * Invert bvin, replacing bvout with an inverted version.
+         */
+        void
+        invert_bvec(const bvec &bvin, bvec &bvout) {
+            for(unsigned int i = 0; i < bvin.size(); i++) {
+                bvout(i) = bvin(i) == 0 ? 1 : 0;
             }
         }
     }
