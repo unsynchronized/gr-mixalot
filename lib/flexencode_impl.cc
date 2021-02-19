@@ -873,7 +873,7 @@ namespace gr {
         flexencode_impl::work(int noutput_items,
                   gr_vector_const_void_star &input_items,
                   gr_vector_void_star &output_items) {
-            const float *in = (const float *) input_items[0];
+            //const float *in = (const float *) input_items[0];
             unsigned char *out = (unsigned char *) output_items[0];
 
             boost::mutex::scoped_lock lock(bitqueue_mutex);
@@ -905,8 +905,4 @@ namespace gr {
         }
     } /* namespace mixalot */
 } /* namespace gr */
-
-// XXX look for all assert
-// XXX look for all printf
-// XXX look for all XXX
 
