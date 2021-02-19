@@ -6,7 +6,7 @@ pager messages.  It supports the POCSAG, FLEX, and Golay/GSC protocols.
 
 Here is a breakdown of the blocks:
 
-* pocencode / "Single-Page POCSAG Xmit": Gien parameters (capcode, baud rate, 
+* pocencode / "Single-Page POCSAG Xmit": Given parameters (capcode, baud rate, 
   message, message type), it generates a stream of symbols that can be modulated
   as seen in examples/pocsagtx.grc.
 * gscencode / "Single-Page GSC Xmit": Like the above, but for GSC pagers.  There
@@ -209,7 +209,7 @@ Current todo list/Coming soon
 
 * Add GSC to the PDU-driven encoder
 * Eliminate dependency on the ITPP library (currently only used for BCH) 
-* Eliminate dependency on third-oarty code to do Golay coding
+* Eliminate dependency on third-party code to do Golay coding
 
 
 Credits
