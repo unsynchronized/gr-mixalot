@@ -27,10 +27,10 @@ Commands sent to the PDU-driven encoder use the following form:
 ```
 
 'protocol' is one of:
-    * flex
-    * pocsag512
-    * pocsag1200
-    * pocsag2400
+* flex
+* pocsag512
+* pocsag1200
+* pocsag2400
 
 'messagetag' is an arbitrary string (no spaces allowed) that will be sent back in responses.
 
