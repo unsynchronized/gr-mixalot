@@ -2,7 +2,7 @@
 
 id: mixalot_flexencode
 label: PDU-driven POCSAG/FLEX Encoder
-category: mixalot
+category: '[mixalot]'
 
 inputs:
 -   domain: message

@@ -2,7 +2,7 @@
 
 id: mixalot_pocencode
 label: Single-Page POCSAG Xmit
-category: mixalot
+category: '[mixalot]'
 
 parameters:
 -   id: type

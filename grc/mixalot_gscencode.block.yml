@@ -2,7 +2,7 @@
 
 id: mixalot_gscencode
 label: Single-Page GSC Xmit
-category: mixalot
+category: '[mixalot]'
 
 parameters:
 -   id: type
