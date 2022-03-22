@@ -7,7 +7,7 @@
 #ifndef INCLUDED_MIXALOT_POCENCODE_H
 #define INCLUDED_MIXALOT_POCENCODE_H
 
-#include <mixalot/api.h>
+#include <gnuradio/mixalot/api.h>
 #include <gnuradio/sync_block.h>
 
 namespace gr {
@@ -21,7 +21,7 @@ namespace gr {
     class MIXALOT_API pocencode : virtual public gr::sync_block
     {
     public:
-       typedef boost::shared_ptr<pocencode> sptr;
+       typedef std::shared_ptr<pocencode> sptr;
        typedef enum { Numeric = 0, Alpha = 1 } msgtype_t;
 
       /*!
@@ -32,7 +32,7 @@ namespace gr {
        * class. mixalot::pocencode::make is the public interface for
        * creating new instances.
        */
-      static sptr make(msgtype_t type=Numeric, unsigned int baudrate = 1200, unsigned int capcode = 0, std::string message="", unsigned long symrate = 38400);
+      static sptr make(int type=0, unsigned int baudrate = 1200, unsigned int capcode = 0, std::string message="", unsigned long symrate = 38400);
     };
 
   } // namespace mixalot

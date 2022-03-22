@@ -29,7 +29,7 @@ outputs:
     vlen: 1
 
 templates:
-    imports: import mixalot
+    imports: import gnuradio.mixalot as mixalot
     make: mixalot.pocencode(${type}, ${baudrate}, ${capcode}, ${msg}, ${symrate})
 
 file_format: 1

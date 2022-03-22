@@ -21,7 +21,7 @@ outputs:
     optional: true
 
 templates:
-    imports: import mixalot
+    imports: import gnuradio.mixalot as mixalot
     make: mixalot.flexencode()
 
 file_format: 1

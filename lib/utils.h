@@ -10,7 +10,7 @@
 #include <sstream>
 #include <vector>
 
-using boost::shared_ptr;
+using std::shared_ptr;
 using itpp::bvec;
 namespace gr {
     namespace mixalot {

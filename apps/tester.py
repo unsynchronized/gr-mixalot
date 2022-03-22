@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from gnuradio import gr, gr_unittest, pager, gru
-import mixalot_swig as mixalot
+import mixalot_python as mixalot
 import time, os, sys
 
 class tester_top(gr.top_block):
