@@ -7,13 +7,13 @@
 #ifndef INCLUDED_MIXALOT_GSCENCODE_IMPL_H
 #define INCLUDED_MIXALOT_GSCENCODE_IMPL_H
 
-#include <mixalot/gscencode.h>
+#include <gnuradio/mixalot/gscencode.h>
 #include <queue>
 #include <itpp/comm/bch.h>
 
 using namespace itpp;
 using std::string;
-using boost::shared_ptr;
+using std::shared_ptr;
 
 
 namespace gr {
@@ -23,7 +23,7 @@ namespace gr {
     {
     private:
         std::queue<bool> d_bitqueue;   // Queue of symbols to be sent out.
-        msgtype_t d_msgtype;                // message type
+        int d_msgtype;                // message type
         unsigned int d_capcode;             // capcode (pager ID)
         unsigned long d_symrate;            // output symbol rate (must be evenly divisible by the baud rate)
         std::string d_message;              // message to send
@@ -41,7 +41,7 @@ namespace gr {
         void queue_data_block(unsigned char *blockmsg, bool continuebit);
 
     public:
-      gscencode_impl(msgtype_t msgtype, unsigned int capcode, std::string message, unsigned long symrate);
+      gscencode_impl(int msgtype, unsigned int capcode, std::string message, unsigned long symrate);
       ~gscencode_impl();
 
       // Where all the action really happens

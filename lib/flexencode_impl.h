@@ -7,7 +7,7 @@
 #ifndef INCLUDED_MIXALOT_FLEXENCODE_IMPL_H
 #define INCLUDED_MIXALOT_FLEXENCODE_IMPL_H
 
-#include <mixalot/flexencode.h>
+#include <gnuradio/mixalot/flexencode.h>
 #include <queue>
 #include <vector>
 #include <itpp/comm/bch.h>
@@ -15,7 +15,7 @@
 using namespace itpp;
 using std::string;
 using std::vector;
-using boost::shared_ptr;
+using std::shared_ptr;
 
 
 namespace gr {

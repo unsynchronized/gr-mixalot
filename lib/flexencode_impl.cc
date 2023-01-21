@@ -21,7 +21,7 @@
 using namespace itpp;
 using std::string;
 using std::vector;
-using boost::shared_ptr;
+using std::shared_ptr;
 
 
 namespace gr {
@@ -677,9 +677,10 @@ namespace gr {
             message_port_register_out(pmt::mp("beeps_output"));
             message_port_register_out(pmt::mp("cmds_out"));
             message_port_register_in(pmt::mp("beeps"));
-            set_msg_handler(pmt::mp("beeps"),
-                boost::bind(&flexencode_impl::beeps_message, this, _1)
-            );
+            /*set_msg_handler(pmt::mp("beeps"),
+                std::bind(&flexencode_impl::beeps_message, this, std::placeholders::_1)
+            );*/
+            set_msg_handler(pmt::mp("beeps"), [this](pmt::pmt_t msg) { this->beeps_message(msg); });
         }
         void
         flexencode_impl::add_command_id(string cmdid) {

@@ -2,7 +2,7 @@
 
 id: mixalot_gscencode
 label: Single-Page GSC Xmit
-category: mixalot
+category: '[mixalot]'
 
 parameters:
 -   id: type
@@ -26,7 +26,7 @@ outputs:
     vlen: 1
 
 templates:
-    imports: import mixalot
+    imports: import gnuradio.mixalot as mixalot
     make: mixalot.gscencode(${type}, ${capcode}, ${msg}, ${symrate})
 
 file_format: 1

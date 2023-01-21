@@ -2,7 +2,7 @@
 
 id: mixalot_flexencode
 label: PDU-driven POCSAG/FLEX Encoder
-category: mixalot
+category: '[mixalot]'
 
 inputs:
 -   domain: message
@@ -21,7 +21,7 @@ outputs:
     optional: true
 
 templates:
-    imports: import mixalot
+    imports: import gnuradio.mixalot as mixalot
     make: mixalot.flexencode()
 
 file_format: 1

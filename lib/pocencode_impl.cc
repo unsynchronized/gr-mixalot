@@ -17,7 +17,7 @@
 
 using namespace itpp;
 using std::string;
-using boost::shared_ptr;
+using std::shared_ptr;
 
 
 namespace gr {
@@ -32,7 +32,7 @@ namespace gr {
             return (b >> 1);
         }
         pocencode::sptr
-        pocencode::make(msgtype_t type, unsigned int baudrate, unsigned int capcode, std::string message, unsigned long symrate) {
+        pocencode::make(int type, unsigned int baudrate, unsigned int capcode, std::string message, unsigned long symrate) {
             return gnuradio::get_initial_sptr (new pocencode_impl(type, baudrate, capcode, message, symrate));
         }
 
@@ -112,7 +112,7 @@ namespace gr {
 
 
 
-        pocencode_impl::pocencode_impl(msgtype_t msgtype, unsigned int baudrate, unsigned int capcode, std::string message, unsigned long symrate)
+        pocencode_impl::pocencode_impl(int msgtype, unsigned int baudrate, unsigned int capcode, std::string message, unsigned long symrate)
           : d_baudrate(baudrate), d_capcode(capcode), d_msgtype(msgtype), d_message(message), d_symrate(symrate),
           sync_block("pocencode",
                   io_signature::make(0, 0, 0),

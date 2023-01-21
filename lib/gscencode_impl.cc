@@ -23,7 +23,7 @@
 using namespace itpp;
 using std::vector;
 using std::string;
-using boost::shared_ptr;
+using std::shared_ptr;
 
 
 namespace gr {
@@ -38,7 +38,7 @@ namespace gr {
             return (b >> 1);
         }
         gscencode::sptr
-        gscencode::make(msgtype_t type, unsigned int capcode, std::string message, unsigned long symrate) {
+        gscencode::make(int type, unsigned int capcode, std::string message, unsigned long symrate) {
             return gnuradio::get_initial_sptr (new gscencode_impl(type, capcode, message, symrate));
         }
 
@@ -404,7 +404,7 @@ namespace gr {
 
 
 
-        gscencode_impl::gscencode_impl(msgtype_t msgtype, unsigned int capcode, std::string message, unsigned long symrate)
+        gscencode_impl::gscencode_impl(int msgtype, unsigned int capcode, std::string message, unsigned long symrate)
           : d_capcode(capcode), d_msgtype(msgtype), d_message(message), d_symrate(symrate), 
 #ifdef GR_OLD
           gr_sync_block("gscencode",

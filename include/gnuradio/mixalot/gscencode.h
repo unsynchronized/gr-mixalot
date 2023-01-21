@@ -7,7 +7,7 @@
 #ifndef INCLUDED_MIXALOT_GSCENCODE_H
 #define INCLUDED_MIXALOT_GSCENCODE_H
 
-#include <mixalot/api.h>
+#include <gnuradio/mixalot/api.h>
 #ifdef GR_OLD
 #include <gr_sync_block.h>
 #else
@@ -16,19 +16,13 @@
 
 namespace gr {
   namespace mixalot {
-
-
-#ifdef GR_OLD
-    class MIXALOT_API gscencode : virtual public gr_sync_block
-#else 
     class MIXALOT_API gscencode : virtual public sync_block
-#endif
     {
     public:
-       typedef boost::shared_ptr<gscencode> sptr;
+       typedef std::shared_ptr<gscencode> sptr;
        typedef enum { Numeric = 0, Alpha = 1 } msgtype_t;
 
-       static sptr make(msgtype_t type=Numeric, unsigned int capcode = 0, std::string message="", unsigned long symrate = 38400);
+       static sptr make(int type=0, unsigned int capcode = 0, std::string message="", unsigned long symrate = 38400);
     };
 
   } // namespace mixalot

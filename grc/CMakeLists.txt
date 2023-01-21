@@ -19,5 +19,8 @@
 # Boston, MA 02110-1301, USA.
 
 install(FILES
-    mixalot_gscencode.block.yml mixalot_pocencode.block.yml mixalot_flexencode.block.yml DESTINATION share/gnuradio/grc/blocks
+    mixalot_gscencode.block.yml
+    mixalot_pocencode.block.yml
+    mixalot_flexencode.block.yml
+    DESTINATION share/gnuradio/grc/blocks
 )
