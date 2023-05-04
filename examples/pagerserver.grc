@@ -213,7 +213,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 116.0]
+    coordinate: [48, 140.0]
     rotation: 0
     state: true
 - name: pfb_arb_resampler_xxx_0
@@ -521,6 +521,7 @@ connections:
 - [blocks_multiply_const_vxx_0, '0', pfb_arb_resampler_xxx_0, '0']
 - [mixalot_flexencode_0, '0', blocks_char_to_float_0, '0']
 - [mixalot_flexencode_0, '0', blocks_file_sink_1, '0']
+- [mixalot_flexencode_0, beeps_output, network_socket_pdu_0, pdus]
 - [mixalot_flexencode_0, cmds_out, uhd_usrp_sink_0, command]
 - [network_socket_pdu_0, pdus, mixalot_flexencode_0, beeps]
 - [pfb_arb_resampler_xxx_0, '0', blocks_file_sink_0, '0']
