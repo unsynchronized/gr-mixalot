@@ -32,8 +32,8 @@ namespace gr {
             return (b >> 1);
         }
         pocencode::sptr
-        pocencode::make(int type, unsigned int baudrate, unsigned int capcode, std::string message, unsigned long symrate) {
-            return gnuradio::get_initial_sptr (new pocencode_impl(type, baudrate, capcode, message, symrate));
+        pocencode::make(int type, unsigned int baudrate, unsigned int capcode, unsigned int functionBit, std::string message, unsigned long symrate) {
+            return gnuradio::get_initial_sptr (new pocencode_impl(type, baudrate, capcode, functionBit, message, symrate));
         }
 
 
@@ -43,23 +43,25 @@ namespace gr {
         void
         pocencode_impl::queue_batch() {
             std::vector<uint32_t> msgwords;
-            uint32_t functionbits = 0;
             switch(d_msgtype) {
                 case Numeric:
                     make_numeric_message(d_message, msgwords);
-                    functionbits = 0;
                     break;
                 case Alpha:
                     make_alpha_message(d_message, msgwords);
-                    functionbits = 3;
                     break;
                 default:
                     throw std::runtime_error("Invalid message type specified.");
             }
+            
+            if(d_functionBit < 0 || d_functionBit > 3) {
+                throw std::runtime_error("Invalid function bit. Must be between 0 and 3.")
+            }
+
             msgwords.push_back(POCSAG_IDLEWORD);
 
             static const shared_ptr<bvec> preamble = get_vec("101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010");
-            const uint32_t addrtemp = (d_capcode >> 3) << 13 | ((functionbits & 3) << 11);
+            const uint32_t addrtemp = (d_capcode >> 3) << 13 | ((d_functionBit & 3) << 11);
             const uint32_t addrword = encodeword(addrtemp);
             const uint32_t frameoffset = d_capcode & 7;
 
@@ -112,8 +114,8 @@ namespace gr {
 
 
 
-        pocencode_impl::pocencode_impl(int msgtype, unsigned int baudrate, unsigned int capcode, std::string message, unsigned long symrate)
-          : d_baudrate(baudrate), d_capcode(capcode), d_msgtype(msgtype), d_message(message), d_symrate(symrate),
+        pocencode_impl::pocencode_impl(int msgtype, unsigned int baudrate, unsigned int capcode, unsigned int functionBit, std::string message, unsigned long symrate)
+          : d_baudrate(baudrate), d_capcode(capcode), d_msgtype(msgtype), d_functionBit(functionBit) d_message(message), d_symrate(symrate),
           sync_block("pocencode",
                   io_signature::make(0, 0, 0),
                   io_signature::make(1, 1, sizeof (unsigned char)))

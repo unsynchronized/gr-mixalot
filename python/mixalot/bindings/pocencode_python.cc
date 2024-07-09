@@ -40,6 +40,7 @@ void bind_pocencode(py::module& m)
            py::arg("type") = 0,
            py::arg("baudrate") = 1200,
            py::arg("capcode") = 0,
+           py::arg("functionBit") = 0,
            py::arg("message") = "",
            py::arg("symrate") = 38400,
            D(pocencode,make)

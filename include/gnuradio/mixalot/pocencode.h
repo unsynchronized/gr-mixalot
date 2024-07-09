@@ -32,7 +32,7 @@ namespace gr {
        * class. mixalot::pocencode::make is the public interface for
        * creating new instances.
        */
-      static sptr make(int type=0, unsigned int baudrate = 1200, unsigned int capcode = 0, std::string message="", unsigned long symrate = 38400);
+      static sptr make(int type=0, unsigned int baudrate = 1200, unsigned int capcode = 0, unsigned int functionBit = 0, std::string message="", unsigned long symrate = 38400);
     };
 
   } // namespace mixalot

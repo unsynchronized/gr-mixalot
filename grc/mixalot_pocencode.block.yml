@@ -16,6 +16,9 @@ parameters:
 -   id: capcode
     label: Capcode
     dtype: int
+-   id: functionBit
+    label: Function Bit
+    dtype: int
 -   id: msg
     label: Message
     dtype: string
@@ -30,6 +33,6 @@ outputs:
 
 templates:
     imports: import gnuradio.mixalot as mixalot
-    make: mixalot.pocencode(${type}, ${baudrate}, ${capcode}, ${msg}, ${symrate})
+    make: mixalot.pocencode(${type}, ${baudrate}, ${capcode}, ${functionBit}, ${msg}, ${symrate})
 
 file_format: 1

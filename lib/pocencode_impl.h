@@ -26,13 +26,14 @@ namespace gr {
         int d_msgtype;                // message type
         unsigned int d_baudrate;            // baud rate to transmit at -- should be 512, 1200, or 2400 (although others will work!)
         unsigned int d_capcode;             // capcode (pager ID)
+        unsigned int d_functionBit;         // function bit to indicate the type of message
         unsigned long d_symrate;            // output symbol rate (must be evenly divisible by the baud rate)
         std::string d_message;              // message to send
 
         inline void queuebit(bool bit);
 
     public:
-      pocencode_impl(int msgtype, unsigned int baudrate, unsigned int capcode, std::string message, unsigned long symrate);
+      pocencode_impl(int msgtype, unsigned int baudrate, unsigned int capcode, unsigned int functionBit, std::string message, unsigned long symrate);
       ~pocencode_impl();
 
       // Where all the action really happens
