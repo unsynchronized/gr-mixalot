@@ -141,7 +141,7 @@ long get_syndrome(long pattern)
 
 
 unsigned long calcgolay(unsigned long data) {
-   register int i;
+   int i;
    long temp;
 
    /*
